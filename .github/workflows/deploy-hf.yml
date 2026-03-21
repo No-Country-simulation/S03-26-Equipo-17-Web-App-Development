@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'backend/**' # Solo se activa si cambias algo en el backend
+  workflow_dispatch:
 
 jobs:
   deploy:
