@@ -6,7 +6,7 @@ Este es un CRM y una aplicación web en desarrollo para la simulación de No Cou
 
 El proyecto se divide en los siguientes componentes principales:
 
-*   **`frontend/`**: Interfaz de usuario construida con React y TypeScript.
+*   **`frontend/`**: Interfaz de usuario construida con React, Tailwind CSS y Javascript.
 *   **`backend/`**: Lógica de negocio y API desarrollada con Java y Spring Framework.
 *   **`IA/`**: Componentes de IA y procesamiento de datos.
 
