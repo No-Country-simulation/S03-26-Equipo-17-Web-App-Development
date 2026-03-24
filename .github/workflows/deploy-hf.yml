@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'backend/**' # Solo se activa si cambias algo en el backend
+      - 'backend/**'
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
           cd backend
           # Inicializamos un git temporal solo para el envío
           git init
-          git remote add hf https://tonyy1:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/tonyy1/crm
+          git remote add hf https://tonyy1:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/No-Country-Equipo-17/crm
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add .
