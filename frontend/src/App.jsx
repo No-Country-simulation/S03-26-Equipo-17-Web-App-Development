@@ -4,7 +4,7 @@ import NavMenu from "./components/navMenu";
 function App() {
   return (
     <>
-      <NavMenu />
+      <h1 class="text-3xl font-bold underline">Hello world!</h1>
     </>
   );
 }
