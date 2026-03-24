@@ -69,7 +69,7 @@ classDiagram
     Lead "n" --> "1" Usuario : asignadoA
     Interaction "n" --> "1" Lead : perteneceA
     Interaction --> TipoInteraccion : es
-
+```
 
 Agrupé las clases por las carpetas que se definio (lead, auth, interaction). Esto ayuda a que cada miembro del equipo sepa qué archivos "le pertenecen".
 
