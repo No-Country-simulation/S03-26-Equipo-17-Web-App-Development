@@ -69,3 +69,16 @@ classDiagram
     Lead "n" --> "1" Usuario : asignadoA
     Interaction "n" --> "1" Lead : perteneceA
     Interaction --> TipoInteraccion : es
+
+
+Agrupé las clases por las carpetas que se definio (lead, auth, interaction). Esto ayuda a que cada miembro del equipo sepa qué archivos "le pertenecen".
+
+Quité Empresa, Contacto, Oportunidad y Producto.
+
+En un CRM inicial, un Lead es suficiente. Si el Lead se vuelve cliente, simplemente cambia su EstadoLead a CLIENTE. No necesitas duplicar datos en una tabla Contacto por ahora.
+
+En lugar de tener tablas separadas para Notas, Actividades y Mensajes, usamos Interaction.
+
+Si llega un WhatsApp → Interaction (Tipo: WHATSAPP).
+
+Si el vendedor cambia el estado → Interaction (Tipo: CAMBIO_ESTADO).
