@@ -8,6 +8,19 @@ export const LandingPage = () => {
     <NavMenu />
     {/* ----------------- Fin Seccion Nav Menu ------------------ */}
 
+
+    {/* ----------------- Seccion Hero ------------------ */}
+
+
+    {/* ----------------- Fin Seccion Hero ------------------ */}
+
+    {/* ----------------- Seccion Post Hero ------------------ */}
+
+
+
+    {/* ----------------- Fin Seccion Post Hero ------------------ */}
+
+
       {/* ----------------- Seccion pre-footer ------------------ */}
       <section className="w-full bg-white px-6 py-20">
         <div className="max-w-9xl mx-auto flex justify-center">
