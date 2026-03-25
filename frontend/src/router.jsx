@@ -4,8 +4,6 @@ import { LandingPage } from "./features/landing/landingPage";
 import { About } from "./features/landing/about/AboutSection";
 import { Product } from "./features/landing/product/ProductSection";
 
-
-
 export const router = createBrowserRouter([
   {
     path: "/",

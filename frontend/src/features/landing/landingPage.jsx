@@ -4,10 +4,6 @@ import { FooterLandingPage } from "./../../components/landingPageComponents/foot
 export const LandingPage = () => {
   return (
     <>
-      {/* ----------------- Seccion Nav Menu ------------------ */}
-      <NavMenu />
-      {/* ----------------- Fin Seccion Nav Menu ------------------ */}
-
       {/* ----------------- Seccion Hero ------------------ */}
       <main class="bg-white min-h-screen flex items-center justify-center overflow-hidden">
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -184,10 +180,6 @@ export const LandingPage = () => {
         </div>
       </section>
       {/* ----------------- Fin Seccion pre-footer------------------ */}
-
-      {/* ----------------- Footer ------------------ */}
-      <FooterLandingPage />
-      {/* ----------------- Footer ------------------ */}
     </>
   );
 };
