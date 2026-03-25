@@ -1,10 +1,10 @@
 import "./styles/App.css";
-import NavMenu from "./components/navMenu";
+import { LandingPage } from "./features/landing/landingPage";
 
 function App() {
   return (
     <>
-      <NavMenu />
+      <LandingPage />
     </>
   );
 }
