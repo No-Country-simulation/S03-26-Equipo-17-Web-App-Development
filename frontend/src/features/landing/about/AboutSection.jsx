@@ -1,10 +1,11 @@
-import { NavMenu } from "./../../../components/landingPageComponents/navMenu";
 import { FooterLandingPage } from "./../../../components/landingPageComponents/footer";
-export const Product = () => {
+import { NavMenu } from "./../../../components/landingPageComponents/navMenu";
+
+export const About = () => {
     return (
         <>
             <NavMenu />
-            <h1>Product Section</h1>
+            <h1>About Section</h1>
             <FooterLandingPage />
         </>
     );

@@ -1,29 +1,27 @@
+import { Link } from "react-router-dom";
+
 export const NavMenu = () => {
+
   return (
     <nav className="w-full bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-
         <div className="flex items-center gap-10">
           <span className="text-xl font-semibold text-gray-900">
-            Nexus CRM
-          </span>
+              <Link to="/" className="hover:text-[#3882F6] transition">
+                Nexus CRM
+              </Link>
+            </span>
 
           <ul className="hidden md:flex items-center gap-6 text-[#64748B] font-medium">
             <li>
-              <a
-                href="#"
-                className="hover:text-[#3882F6] transition"
-              >
+              <Link to="/product" className="hover:text-[#3882F6] transition">
                 Product
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
-                className="hover:text-[#3882F6] transition"
-              >
+              <Link to="/about" className="hover:text-[#3882F6] transition">
                 About
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -40,8 +38,7 @@ export const NavMenu = () => {
             Get Started
           </button>
         </div>
-
       </div>
     </nav>
   );
-}
+};
