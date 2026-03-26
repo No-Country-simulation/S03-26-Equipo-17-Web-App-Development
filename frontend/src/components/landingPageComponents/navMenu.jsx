@@ -31,16 +31,21 @@ export const NavMenu = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <Link to="/signin">
           <a
             href="#"
             className="text-[#64748B] hover:text-[#3882F6] transition"
           >
             Sign In
           </a>
-
+          </Link>
+          
+          <Link to="/register">
           <button className="bg-[#3882F6] text-white px-5 py-2 rounded-lg shadow-sm hover:bg-blue-600 transition">
             Get Started
           </button>
+          </Link>
+          
         </div>
       </div>
     </nav>
