@@ -6,11 +6,15 @@ export const NavMenu = () => {
     <nav className="w-full bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-10">
-          <span className="text-xl font-semibold text-gray-900">
-              <Link to="/" className="hover:text-[#3882F6] transition">
-                Nexus CRM
-              </Link>
-            </span>
+          <span className="text-xlmax-w-xs md:max-w-sm h-auto object-contain font-semibold text-gray-900">
+            <Link to="/" className="hover:text-[#3882F6] transition">
+              <img
+                className="h-10 md:h-12 w-auto object-contain"
+                src="./../../../public/Nexus CRM logo.png"
+                alt=""
+              />
+            </Link>
+          </span>
 
           <ul className="hidden md:flex items-center gap-6 text-[#64748B] font-medium">
             <li>
