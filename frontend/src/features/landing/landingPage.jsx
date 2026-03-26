@@ -50,7 +50,7 @@ export const LandingPage = () => {
           </div>
 
           <div class="relative w-full flex justify-center lg:justify-end mt-8 lg:mt-0">
-            <div class="absolute inset-0 bg-blue-50 blur-3xl rounded-full -z-10 opacity-70 transform translate-x-10 translate-y-10"></div>
+            <div class="absolute inset-0 bg-white blur-3xl rounded-full -z-10 opacity-70 transform translate-x-10 translate-y-10"></div>
 
             <img
               src="./../../../public/Imagen-modo-oscuro.png"
