@@ -1,11 +1,42 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { validateEmail } from "../../../utils/validations/validationEmail";
+import { validatePassword } from "../../../utils/validations/validationPassword";
 
 export const Signin = () => {
   const [showPassword] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [step, setStep] = useState(1); // 1 = código, 2 = nueva contraseña
+  const [step, setStep] = useState(1);
   const [timer, setTimer] = useState(60);
+
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
+
+  // 🔥 reglas password login
+  const [passwordRules, setPasswordRules] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
+  // nueva contraseña modal
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordRules, setNewPasswordRules] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
 
   // contador
   useEffect(() => {
@@ -21,13 +52,61 @@ export const Signin = () => {
     setTimer(60);
   };
 
+  // 🔥 LOGIN
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setValues({
+      ...values,
+      [name]: value,
+    });
+
+    if (name === "email") {
+      const error = validateEmail(value);
+      setErrors((prev) => ({ ...prev, email: error }));
+    }
+
+    if (name === "password") {
+      const rules = validatePassword(value);
+      setPasswordRules(rules);
+
+      const hasError = Object.values(rules).some((r) => !r);
+
+      setErrors((prev) => ({
+        ...prev,
+        password: hasError ? "Contraseña inválida" : "",
+      }));
+    }
+  };
+
+  // NUEVA PASSWORD (MODAL)
+  const handleNewPasswordChange = (e) => {
+    const value = e.target.value;
+
+    setNewPassword(value);
+
+    const rules = validatePassword(value);
+    setNewPasswordRules(rules);
+  };
+
+  const isValid =
+    values.email && values.password && !errors.email && !errors.password;
+
+  const isNewPasswordValid = Object.values(newPasswordRules).every(
+    (rule) => rule,
+  );
+
   return (
     <section className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Nexus <span className="text-blue-600">CRM</span></h1>
-          <p className="text-gray-500 text-sm">Diseño con  el mejor workflows.</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Nexus <span className="text-blue-600">CRM</span>
+          </h1>
+          <p className="text-gray-500 text-sm">
+            Diseña flujos de trabajo inteligentes.
+          </p>
         </div>
 
         {/* Card */}
@@ -39,17 +118,22 @@ export const Signin = () => {
             Por favor, ingresa tus datos para iniciar sesión.
           </p>
 
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
             {/* Email */}
             <div>
-              <label className="block text-sm text-gray-600 mb-1">
-                Email
-              </label>
+              <label className="block text-sm text-gray-600 mb-1">Email</label>
               <input
+                name="email"
+                value={values.email}
+                onChange={handleChange}
                 type="email"
                 placeholder="nombre@gmail.com"
-                className="w-full px-4 py-2 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-4 py-2 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 
+                ${errors.email ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
             </div>
 
             {/* Password */}
@@ -65,16 +149,72 @@ export const Signin = () => {
                 </button>
               </div>
 
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2 pr-2 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              <input
+                name="password"
+                value={values.password}
+                onChange={handleChange}
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className={`w-full px-4 py-2 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 
+                ${errors.password ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
+              />
+
+              {/* checklist */}
+              {values.password && (
+                <div className="text-sm mt-2 space-y-1">
+                  <p
+                    className={
+                      passwordRules.length ? "text-green-600" : "text-red-500"
+                    }
+                  >
+                    • Mínimo 8 caracteres
+                  </p>
+                  <p
+                    className={
+                      passwordRules.uppercase
+                        ? "text-green-600"
+                        : "text-red-500"
+                    }
+                  >
+                    • Una letra mayúscula
+                  </p>
+                  <p
+                    className={
+                      passwordRules.lowercase
+                        ? "text-green-600"
+                        : "text-red-500"
+                    }
+                  >
+                    • Una letra minúscula
+                  </p>
+                  <p
+                    className={
+                      passwordRules.number ? "text-green-600" : "text-red-500"
+                    }
+                  >
+                    • Un número
+                  </p>
+                  <p
+                    className={
+                      passwordRules.special ? "text-green-600" : "text-red-500"
+                    }
+                  >
+                    • Un carácter especial
+                  </p>
+                </div>
+              )}
             </div>
 
-            <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition">
+            {/* Button */}
+            <button
+              disabled={!isValid}
+              className={`w-full py-2 rounded-lg font-medium transition
+              ${
+                isValid
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+            >
               Iniciar sesión
             </button>
           </form>
@@ -95,32 +235,26 @@ export const Signin = () => {
       {openModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-lg relative">
-            {/* Close */}
             <button
               onClick={() => {
                 setOpenModal(false);
                 setStep(1);
               }}
-              className="absolute top-3 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute top-3 right-4 text-gray-500"
             >
               ✕
             </button>
 
-            {/* STEP 1 */}
             {step === 1 && (
               <>
                 <h2 className="text-lg font-semibold mb-2">
                   Recuperar contraseña
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
-                  Ingresa el código que enviamos a tu correo electrónico.
+                  Ingresa el código enviado a tu correo.
                 </p>
 
-                <input
-                  type="text"
-                  placeholder="Ingresa el código de verificación"
-                  className="w-full px-4 py-2 mb-4 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <input className="w-full px-4 py-2 mb-4 rounded-lg border bg-gray-100" />
 
                 <button
                   onClick={() => setStep(2)}
@@ -131,12 +265,9 @@ export const Signin = () => {
 
                 <div className="text-center text-sm text-gray-500">
                   {timer > 0 ? (
-                    <p>Reenviar código en {timer}s</p>
+                    <p>Reenviar en {timer}s</p>
                   ) : (
-                    <button
-                      onClick={handleResend}
-                      className="text-blue-600 hover:underline"
-                    >
+                    <button onClick={handleResend} className="text-blue-600">
                       Reenviar código
                     </button>
                   )}
@@ -144,42 +275,78 @@ export const Signin = () => {
               </>
             )}
 
-            {/* STEP 2 */}
             {step === 2 && (
               <>
-                <h2 className="text-lg font-semibold mb-4">
-                  Crear nueva contraseña
-                </h2>
+                <h2 className="text-lg font-semibold mb-4">Nueva contraseña</h2>
 
-                <div className="relative mb-4">
-                  <input
-                    type="password"
-                    placeholder="Nueva contraseña"
-                    className="w-full px-4 py-2 pr-10 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                <input
+                  value={newPassword}
+                  onChange={handleNewPasswordChange}
+                  type="password"
+                  className="w-full px-4 py-2 rounded-lg border bg-gray-100"
+                />
 
-                  {/* icon ? */}
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 group">
-                    <span className="text-gray-400 cursor-pointer">?</span>
-
-                    {/* Tooltip */}
-                    <div className="absolute right-0 mt-2 w-56 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
-                      <p className="font-semibold mb-1">
-                        Requisitos de contraseña:
-                      </p>
-                      <ul className="space-y-1">
-                        <li>• Al menos 8 caracteres</li>
-                        <li>• Una letra mayúscula</li>
-                        <li>• Una letra minúscula</li>
-                        <li>• Un número</li>
-                        <li>• Un carácter especial</li>
-                      </ul>
-                    </div>
+                {/* checklist modal */}
+                {newPassword && (
+                  <div className="text-sm mt-2 space-y-1">
+                    <p
+                      className={
+                        newPasswordRules.length
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }
+                    >
+                      • Mínimo 8 caracteres
+                    </p>
+                    <p
+                      className={
+                        newPasswordRules.uppercase
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }
+                    >
+                      • Una mayúscula
+                    </p>
+                    <p
+                      className={
+                        newPasswordRules.lowercase
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }
+                    >
+                      • Una minúscula
+                    </p>
+                    <p
+                      className={
+                        newPasswordRules.number
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }
+                    >
+                      • Un número
+                    </p>
+                    <p
+                      className={
+                        newPasswordRules.special
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }
+                    >
+                      • Un símbolo
+                    </p>
                   </div>
-                </div>
+                )}
 
                 <Link to="/signin">
-                  <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                  <button
+                    disabled={!isNewPasswordValid}
+                    className={`w-full mt-4 py-2 rounded-lg
+                    ${
+                      isNewPasswordValid
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
                     Hecho
                   </button>
                 </Link>
