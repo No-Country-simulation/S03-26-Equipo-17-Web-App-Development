@@ -19,7 +19,7 @@ export const Signin = () => {
     password: "",
   });
 
-  // 🔥 reglas password login
+  // reglas password login
   const [passwordRules, setPasswordRules] = useState({
     length: false,
     uppercase: false,
