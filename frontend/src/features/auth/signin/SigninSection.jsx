@@ -52,7 +52,7 @@ export const Signin = () => {
     setTimer(60);
   };
 
-  // 🔥 LOGIN
+  // LOGIN
   const handleChange = (e) => {
     const { name, value } = e.target;
 
