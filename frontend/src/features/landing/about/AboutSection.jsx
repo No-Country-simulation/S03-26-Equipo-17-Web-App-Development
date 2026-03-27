@@ -312,7 +312,7 @@ export const About = () => {
               href="#"
               class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 border border-slate-200 text-base font-semibold rounded-xl text-slate-900 bg-white hover:bg-slate-50 shadow-sm transition-colors duration-200"
             >
-              Hablar con vendedores
+              Hablar con ventas
             </a>
           </div>
         </div>

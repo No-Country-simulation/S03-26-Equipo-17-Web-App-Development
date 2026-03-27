@@ -19,12 +19,12 @@ export const NavMenu = () => {
           <ul className="hidden md:flex items-center gap-6 text-[#64748B] font-medium">
             <li>
               <Link to="/product" className="hover:text-[#3882F6] transition">
-                Product
+                Producto
               </Link>
             </li>
             <li>
               <Link to="/about" className="hover:text-[#3882F6] transition">
-                About
+                Acerca de Nosotros
               </Link>
             </li>
           </ul>
@@ -36,13 +36,13 @@ export const NavMenu = () => {
             href="#"
             className="text-[#64748B] hover:text-[#3882F6] transition"
           >
-            Sign In
+            Iniciar Sesión
           </a>
           </Link>
           
           <Link to="/register">
           <button className="bg-[#3882F6] text-white px-5 py-2 rounded-lg shadow-sm hover:bg-blue-600 transition">
-            Get Started
+            Empezar
           </button>
           </Link>
           
