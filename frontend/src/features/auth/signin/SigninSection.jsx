@@ -26,28 +26,28 @@ export const Signin = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Nexus CRM</h1>
-          <p className="text-gray-500 text-sm">Architecting fluid workflows.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Nexus <span className="text-blue-600">CRM</span></h1>
+          <p className="text-gray-500 text-sm">Diseño con  el mejor workflows.</p>
         </div>
 
         {/* Card */}
         <div className="bg-white p-8 rounded-2xl shadow-md">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Welcome Back
+            Bienvenido de nuevo
           </h2>
           <p className="text-gray-500 text-sm mb-6">
-            Please enter your details to sign in.
+            Por favor, ingresa tus datos para iniciar sesión.
           </p>
 
           <form className="space-y-5">
             {/* Email */}
             <div>
               <label className="block text-sm text-gray-600 mb-1">
-                Email Address
+                Email
               </label>
               <input
                 type="email"
-                placeholder="name@company.com"
+                placeholder="nombre@gmail.com"
                 className="w-full px-4 py-2 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -55,13 +55,13 @@ export const Signin = () => {
             {/* Password */}
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="text-sm text-gray-600">Password</label>
+                <label className="text-sm text-gray-600">Contraseña</label>
                 <button
                   type="button"
                   onClick={() => setOpenModal(true)}
                   className="text-sm text-blue-600 hover:underline"
                 >
-                  Forgot password?
+                  ¿Olvidaste tu contraseña?
                 </button>
               </div>
 
@@ -75,17 +75,17 @@ export const Signin = () => {
             </div>
 
             <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition">
-              Sign In
+              Iniciar sesión
             </button>
           </form>
         </div>
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don't have an account?{" "}
+          ¿No tienes una cuenta?{" "}
           <Link to="/register">
             <span className="text-blue-600 hover:underline cursor-pointer">
-              Create an account
+              Crear una cuenta
             </span>
           </Link>
         </p>
@@ -110,15 +110,15 @@ export const Signin = () => {
             {step === 1 && (
               <>
                 <h2 className="text-lg font-semibold mb-2">
-                  Reset your password
+                  Recuperar contraseña
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
-                  We sent a code to your email.
+                  Ingresa el código que enviamos a tu correo electrónico.
                 </p>
 
                 <input
                   type="text"
-                  placeholder="Enter code"
+                  placeholder="Ingresa el código de verificación"
                   className="w-full px-4 py-2 mb-4 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
 
@@ -126,18 +126,18 @@ export const Signin = () => {
                   onClick={() => setStep(2)}
                   className="w-full bg-blue-600 text-white py-2 rounded-lg mb-3"
                 >
-                  Verify Code
+                  Verificar código
                 </button>
 
                 <div className="text-center text-sm text-gray-500">
                   {timer > 0 ? (
-                    <p>Resend code in {timer}s</p>
+                    <p>Reenviar código en {timer}s</p>
                   ) : (
                     <button
                       onClick={handleResend}
                       className="text-blue-600 hover:underline"
                     >
-                      Resend code
+                      Reenviar código
                     </button>
                   )}
                 </div>
@@ -148,13 +148,13 @@ export const Signin = () => {
             {step === 2 && (
               <>
                 <h2 className="text-lg font-semibold mb-4">
-                  Create new password
+                  Crear nueva contraseña
                 </h2>
 
                 <div className="relative mb-4">
                   <input
                     type="password"
-                    placeholder="New password"
+                    placeholder="Nueva contraseña"
                     className="w-full px-4 py-2 pr-10 rounded-lg border bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
 
@@ -165,14 +165,14 @@ export const Signin = () => {
                     {/* Tooltip */}
                     <div className="absolute right-0 mt-2 w-56 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
                       <p className="font-semibold mb-1">
-                        Password must contain:
+                        Requisitos de contraseña:
                       </p>
                       <ul className="space-y-1">
-                        <li>• At least 8 characters</li>
-                        <li>• One uppercase letter</li>
-                        <li>• One lowercase letter</li>
-                        <li>• One number</li>
-                        <li>• One special character</li>
+                        <li>• Al menos 8 caracteres</li>
+                        <li>• Una letra mayúscula</li>
+                        <li>• Una letra minúscula</li>
+                        <li>• Un número</li>
+                        <li>• Un carácter especial</li>
                       </ul>
                     </div>
                   </div>
@@ -180,7 +180,7 @@ export const Signin = () => {
 
                 <Link to="/signin">
                   <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-                    Done
+                    Hecho
                   </button>
                 </Link>
               </>

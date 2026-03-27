@@ -5,7 +5,7 @@ export const FooterLandingPage = () => {
         
         {/* Left */}
         <h2 className="text-lg font-semibold text-gray-900">
-          Nexus CRM
+          Nexus <span className="text-blue-600">CRM</span>
         </h2>
 
         {/* Right */}

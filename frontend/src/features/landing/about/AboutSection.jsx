@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 export const About = () => {
   return (
     <>
@@ -302,12 +303,14 @@ export const About = () => {
           </p>
 
           <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a
-              href="#"
-              class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-colors duration-200"
-            >
-              Empezar ahora
-            </a>
+            <Link to="/register">
+              <a
+                href="#"
+                class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-colors duration-200"
+              >
+                Empezar ahora
+              </a>
+            </Link>
             <a
               href="#"
               class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3 border border-slate-200 text-base font-semibold rounded-xl text-slate-900 bg-white hover:bg-slate-50 shadow-sm transition-colors duration-200"
