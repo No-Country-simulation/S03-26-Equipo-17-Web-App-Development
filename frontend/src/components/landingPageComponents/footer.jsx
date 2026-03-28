@@ -1,3 +1,5 @@
+import { modificarFecha } from "./../../utils/copyrightYear";
+
 export const FooterLandingPage = () => {
   return (
     <footer className="w-full bg-white border-t border-gray-100 px-8 py-6">
@@ -10,7 +12,7 @@ export const FooterLandingPage = () => {
 
         {/* Right */}
         <p className="text-sm text-gray-500">
-          © 2026 Nexus CRM. Todos los derechos reservados.
+          © {modificarFecha()} Nexus CRM. Todos los derechos reservados.
         </p>
 
       </div>

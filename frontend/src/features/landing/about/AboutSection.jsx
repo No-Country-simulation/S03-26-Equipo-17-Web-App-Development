@@ -2,8 +2,9 @@ import { Link } from "react-router-dom";
 export const About = () => {
   return (
     <>
+      {/* Hero */}
       <section class="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-5xl mx-auto">
+        <article class="max-w-5xl mx-auto">
           <div class="text-center mb-20">
             <h1 class="text-4xl font-extrabold text-slate-900 sm:text-5xl tracking-tight mb-6">
               Nexus <span class="text-blue-600">CRM</span>
@@ -15,6 +16,7 @@ export const About = () => {
             </p>
           </div>
 
+          {/* Misión de Nexus */}
           <article class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-24">
             <div>
               <h2 class="text-3xl font-bold text-slate-800 mb-4">
@@ -33,6 +35,8 @@ export const About = () => {
                 mientras nuestra tecnología se encarga del seguimiento.
               </p>
             </div>
+
+            {/* Logo de Nexus CRM */}
             <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center h-64 md:h-auto">
               <img
                 src="./../../../../public/Nexus CRM logo.png"
@@ -46,6 +50,7 @@ export const About = () => {
             <h2 class="text-3xl font-bold text-center text-slate-800 mb-12">
               ¿Por qué elegir Nexus?
             </h2>
+            {/* Las cards */}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                 <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-6">
@@ -127,6 +132,7 @@ export const About = () => {
             </div>
           </div>
 
+          {/* Historia */}
           <div class="bg-slate-900 rounded-3xl p-10 text-white text-center">
             <h2 class="text-2xl font-bold mb-4">Nuestra Historia</h2>
             <p class="text-slate-400 max-w-2xl mx-auto">
@@ -137,9 +143,10 @@ export const About = () => {
               seguro y escalable que crece al ritmo de tu negocio.
             </p>
           </div>
-        </div>
+        </article>
       </section>
 
+      {/* Equipo de trabajo */}
       <section class="bg-white py-16 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
           <div class=" md:flex-row md:items-center md:justify-between mb-12 pb-8">
@@ -156,6 +163,7 @@ export const About = () => {
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {/* Luis Feliz */}
             <article class="flex flex-col items-center text-center group">
               <div class="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                 <img
@@ -178,6 +186,7 @@ export const About = () => {
               </a>
             </article>
 
+            {/* Marcos Martinez */}
             <article class="flex flex-col items-center text-center group">
               <div class="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                 <img
@@ -200,6 +209,7 @@ export const About = () => {
               </a>
             </article>
 
+            {/* Isabel Prudencio */}
             <article class="flex flex-col items-center text-center group">
               <div class="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                 <img
@@ -222,6 +232,7 @@ export const About = () => {
               </a>
             </article>
 
+            {/* Mario Perez */}
             <article class="flex flex-col items-center text-center group">
               <div class="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                 <img
@@ -244,6 +255,7 @@ export const About = () => {
               </a>
             </article>
 
+            {/* Anthony Parra */}
             <article class="flex flex-col items-center text-center group">
               <div class="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                 <img
@@ -266,6 +278,7 @@ export const About = () => {
               </a>
             </article>
 
+            {/* Michael Ziliani */}
             <article class="flex flex-col items-center text-center group">
               <div class="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                 <img
@@ -291,6 +304,7 @@ export const About = () => {
         </div>
       </section>
 
+      {/* Listo para empezar */}
       <section class="bg-slate-50 py-24 px-4 sm:px-6 lg:px-8">
         <div class="max-w-4xl mx-auto text-center bg-white p-12 rounded-3xl shadow-lg border border-slate-100">
           <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">

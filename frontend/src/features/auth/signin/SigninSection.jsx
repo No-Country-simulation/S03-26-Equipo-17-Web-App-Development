@@ -111,10 +111,10 @@ export const Signin = () => {
 
         {/* Card */}
         <div className="bg-white p-8 rounded-2xl shadow-md">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl text-center font-semibold text-gray-900 mb-2">
             Bienvenido de nuevo
           </h2>
-          <p className="text-gray-500 text-sm mb-6">
+          <p className="text-gray-500 text-sm mb-6 text-center">
             Por favor, ingresa tus datos para iniciar sesión.
           </p>
 
