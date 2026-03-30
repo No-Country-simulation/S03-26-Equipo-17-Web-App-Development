@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -78,5 +79,10 @@ public class LeadService {
         lead.setStale(false);
         lead.setLastActivity(LocalDateTime.now());
         return leadMapper.toResponse(leadRepository.save(lead));
+    }
+
+    // Coordination method for R3 (WhatsApp integration)
+    public Optional<LeadResponse> findByTelefono(String telefono) {
+        return leadRepository.findByTelefono(telefono).map(leadMapper::toResponse);
     }
 }
