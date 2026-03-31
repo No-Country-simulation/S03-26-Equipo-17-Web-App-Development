@@ -67,7 +67,7 @@ public class WhatsAppWebhookController {
         // Build TwiML reply
         String replyMessage = String.format(
                 "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
-                lead.getNombre()
+                nombre
         );
 
         String twiml = String.format(
