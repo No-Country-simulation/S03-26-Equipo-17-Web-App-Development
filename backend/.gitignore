@@ -4,6 +4,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Secrets ###
+.env
+application-local.properties
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,6 +35,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-# Ignorar propiedades locales y secretos
-src/main/resources/application.properties
