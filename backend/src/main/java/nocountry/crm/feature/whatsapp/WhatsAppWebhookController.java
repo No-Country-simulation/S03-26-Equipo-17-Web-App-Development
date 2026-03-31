@@ -62,13 +62,9 @@ public class WhatsAppWebhookController {
         String nombre = request.ProfileName() != null ? request.ProfileName() : "WhatsApp User";
         String mensaje = request.Body();
 
-        // Track whether this is a new lead
-        boolean[] esNuevo = {false};
-
         // Find existing lead or create new one
         LeadResponse lead = leadService.findByTelefono(telefono)
                 .orElseGet(() -> {
-                    esNuevo[0] = true;
                     LeadResponse nuevoLead = leadService.crearLead(
                             new LeadRequest(nombre, null, telefono)
                     );
@@ -86,10 +82,11 @@ public class WhatsAppWebhookController {
                     "Welcome email sent to " + lead.getEmail());
         }
 
-        // Build TwiML reply based on whether this is a new or returning lead
-        String replyMessage = esNuevo[0]
-                ? String.format("¡Hola %s! 👋 Gracias por contactarnos. Hemos registrado tu información y pronto uno de nuestros asesores se pondrá en contacto contigo.", lead.getNombre())
-                : String.format("¡Hola de nuevo %s! 😊 Recibimos tu mensaje y en breve te atendemos. ¿En qué podemos ayudarte?", lead.getNombre());
+        // Build TwiML reply
+        String replyMessage = String.format(
+                "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
+                lead.getNombre()
+        );
 
         String twiml = String.format(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>%s</Message></Response>",
