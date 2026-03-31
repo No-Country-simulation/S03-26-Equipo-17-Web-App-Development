@@ -1,10 +1,14 @@
 package nocountry.crm.feature.lead;
 
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.email.EmailService;
+import nocountry.crm.feature.interaction.InteractionService;
+import nocountry.crm.feature.interaction.InteractionType;
 import nocountry.crm.shared.exception.BusinessRuleException;
 import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,14 +20,46 @@ public class LeadService {
 
     private final LeadRepository leadRepository;
     private final LeadMapper leadMapper;
+    private final InteractionService interactionService;
+    private final EmailService emailService;
 
+    @Transactional
     public LeadResponse crearLead(LeadRequest request) {
         if (request.telefono() != null && leadRepository.findByTelefono(request.telefono()).isPresent()) {
             throw new BusinessRuleException("Ya existe un Lead con el telefono: " + request.telefono());
         }
         Lead lead = leadMapper.toEntity(request);
         Lead guardado = leadRepository.save(lead);
+
+        if (guardado.getEmail() != null && !guardado.getEmail().isBlank()) {
+            enviarEmailBienvenida(guardado);
+        }
+
         return leadMapper.toResponse(guardado);
+    }
+
+    @Transactional
+    public LeadResponse actualizarDatos(Long id, LeadRequest request) {
+        Lead lead = leadRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado"));
+
+        // Detectar si estamos agregando el email por primera vez
+        boolean noTeniaEmail = (lead.getEmail() == null || lead.getEmail().isBlank());
+        boolean ahoraTieneEmail = (request.email() != null && !request.email().isBlank());
+
+        lead.setNombre(request.nombre());
+        lead.setEmail(request.email());
+        lead.setTelefono(request.telefono());
+        lead.setLastActivity(LocalDateTime.now());
+
+        Lead actualizado = leadRepository.save(lead);
+
+        // Si antes no tenía y ahora sí, enviamos el email de bienvenida automáticamente
+        if (noTeniaEmail && ahoraTieneEmail) {
+            enviarEmailBienvenida(actualizado);
+        }
+
+        return leadMapper.toResponse(actualizado);
     }
 
     public List<LeadResponse> listarLeads() {
@@ -36,9 +72,12 @@ public class LeadService {
         return leadMapper.toResponse(lead);
     }
 
+    @Transactional
     public LeadResponse cambiarEstado(Long id, EstadoLead nuevoEstado) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
+
+        EstadoLead estadoAnterior = lead.getEstado();
 
         if (nuevoEstado == EstadoLead.CLIENTE && (lead.getEmail() == null || lead.getEmail().isBlank())) {
             throw new BusinessRuleException("No se puede pasar a CLIENTE sin un email registrado");
@@ -47,10 +86,17 @@ public class LeadService {
         lead.setEstado(nuevoEstado);
         lead.setLastActivity(LocalDateTime.now());
         Lead actualizado = leadRepository.save(lead);
+
+        interactionService.register(
+                lead.getId(),
+                InteractionType.CAMBIO_ESTADO,
+                estadoAnterior.name() + " → " + nuevoEstado.name()
+        );
         return leadMapper.toResponse(actualizado);
     }
 
     //Conectar con R2
+    @Transactional
     public void eliminarLead(Long id, Long userId) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
@@ -58,6 +104,9 @@ public class LeadService {
         lead.setDeletedAt(LocalDateTime.now());
         lead.setDeletedBy(userId);
         leadRepository.save(lead);
+
+        interactionService.register(id, InteractionType.CAMBIO_ESTADO,
+                "Lead eliminado (Soft Delete) por usuario ID: " + userId);
     }
 
     @Scheduled(cron = "0 0 * * * *")
@@ -72,17 +121,62 @@ public class LeadService {
         leadRepository.saveAll(leadsInactivos);
     }
 
+    @Transactional
     public LeadResponse marcarAtendido(Long id) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
 
+        EstadoLead estadoAnterior = lead.getEstado();
+
         lead.setStale(false);
+        if (lead.getEstado() == EstadoLead.NUEVO) {
+            lead.setEstado(EstadoLead.EN_SEGUIMIENTO);
+        }
         lead.setLastActivity(LocalDateTime.now());
-        return leadMapper.toResponse(leadRepository.save(lead));
+
+        Lead guardado = leadRepository.save(lead);
+
+        String mensajeHistorial = (estadoAnterior != lead.getEstado())
+                ? "Lead atendido. El estado cambió automáticamente de " + estadoAnterior + " a " + lead.getEstado()
+                : "Lead marcado como atendido (se limpió la alerta de inactividad)";
+
+        interactionService.register(id, InteractionType.CAMBIO_ESTADO, mensajeHistorial);
+
+        return  leadMapper.toResponse(guardado);
     }
 
     // Coordination method for R3 (WhatsApp integration)
     public Optional<LeadResponse> findByTelefono(String telefono) {
         return leadRepository.findByTelefono(telefono).map(leadMapper::toResponse);
+    }
+
+    @Transactional
+    public LeadResponse procesarMensajeWhatsApp(String telefono, String nombre, String mensaje) {
+        Lead lead = leadRepository.findByTelefono(telefono)
+                .orElseGet(() -> {
+                    Lead nuevo = new Lead();
+                    nuevo.setNombre(nombre);
+                    nuevo.setTelefono(telefono);
+                    return leadRepository.save(nuevo);
+                });
+
+        lead.setLastActivity(LocalDateTime.now());
+
+
+        if (lead.getEstado() == EstadoLead.PERDIDO) {
+            lead.setEstado(EstadoLead.EN_SEGUIMIENTO);
+        }
+
+        leadRepository.save(lead);
+
+        interactionService.register(lead.getId(), InteractionType.WHATSAPP, mensaje);
+
+        return leadMapper.toResponse(lead);
+    }
+
+    private void enviarEmailBienvenida(Lead lead) {
+        emailService.sendWelcomeEmail(lead.getEmail(), lead.getNombre());
+        interactionService.register(lead.getId(), InteractionType.EMAIL,
+                "Email de bienvenida enviado a: " + lead.getEmail());
     }
 }

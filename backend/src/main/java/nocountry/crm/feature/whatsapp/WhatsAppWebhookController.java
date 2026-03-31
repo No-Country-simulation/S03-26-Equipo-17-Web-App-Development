@@ -44,12 +44,12 @@ public class WhatsAppWebhookController {
     @Operation(
         summary = "Twilio WhatsApp webhook",
         description = """
-            Receives POST from Twilio when a WhatsApp message arrives.
-            Automatically creates a new Lead if the phone number is not registered,
-            or updates lastActivity if it already exists.
-            Registers the message in the interaction history (type: WHATSAPP).
-            If the Lead has an email, sends a welcome email via Resend.
-            Returns an empty TwiML response as required by Twilio.
+            Recibe POST de Twilio cuando llega un mensaje de WhatsApp.
+            Crea automáticamente un nuevo Lead si el número de teléfono no está registrado,
+            o actualiza lastActivity si ya existe.
+            Registra el mensaje en el historial de interacciones (tipo: WHATSAPP).
+            Si el Lead tiene un correo electrónico, envía un correo de bienvenida a través de Resend.
+            Devuelve una respuesta TwiML vacía según lo requiere Twilio.
             """,
         responses = {
             @ApiResponse(responseCode = "200", description = "Webhook processed successfully")
@@ -62,25 +62,7 @@ public class WhatsAppWebhookController {
         String nombre = request.ProfileName() != null ? request.ProfileName() : "WhatsApp User";
         String mensaje = request.Body();
 
-        // Find existing lead or create new one
-        LeadResponse lead = leadService.findByTelefono(telefono)
-                .orElseGet(() -> {
-                    LeadResponse nuevoLead = leadService.crearLead(
-                            new LeadRequest(nombre, null, telefono)
-                    );
-                    log.info("New lead created from WhatsApp: id={}", nuevoLead.getId());
-                    return nuevoLead;
-                });
-
-        // Register the WhatsApp message in interaction history
-        interactionService.register(lead.getId(), InteractionType.WHATSAPP, mensaje);
-
-        // Send welcome email only if lead has email (new leads from WhatsApp don't have one by default)
-        if (lead.getEmail() != null && !lead.getEmail().isBlank()) {
-            emailService.sendWelcomeEmail(lead.getEmail(), lead.getNombre());
-            interactionService.register(lead.getId(), InteractionType.EMAIL,
-                    "Welcome email sent to " + lead.getEmail());
-        }
+        leadService.procesarMensajeWhatsApp(telefono, nombre, mensaje);
 
         // Twilio requires an empty TwiML response to not auto-reply
         return ResponseEntity.ok()

@@ -38,6 +38,14 @@ public class LeadController {
         return ResponseEntity.status(HttpStatus.CREATED).body(leadService.crearLead(request));
     }
 
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar datos de un lead", description = "Permite editar nombre, email o teléfono")
+    public ResponseEntity<LeadResponse> actualizarLead(
+            @PathVariable Long id,
+            @Valid @RequestBody LeadRequest request) {
+        return ResponseEntity.ok(leadService.actualizarDatos(id, request));
+    }
+
     @GetMapping
     @Operation(summary = "Listar todos los leads", description = "Obtiene una lista de todos los leads registrados")
     @ApiResponses(value = {

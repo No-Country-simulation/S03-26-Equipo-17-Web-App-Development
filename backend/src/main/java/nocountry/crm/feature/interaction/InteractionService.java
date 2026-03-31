@@ -1,7 +1,9 @@
 package nocountry.crm.feature.interaction;
 
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.lead.LeadRepository;
 import nocountry.crm.feature.lead.LeadService;
+import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,14 +13,16 @@ import org.springframework.stereotype.Service;
 public class InteractionService {
 
     private final InteractionRepository interactionRepository;
-    private final LeadService leadService;
+    private final LeadRepository leadRepository;
 
     /**
      * Returns the interaction history of a Lead, ordered by date descending.
      * Throws ResourceNotFoundException if the Lead does not exist.
      */
     public Page<InteractionResponse> getHistory(Long leadId, Pageable pageable) {
-        leadService.obtenerPorId(leadId); // validates lead exists
+        if(!leadRepository.existsById(leadId)) {
+            throw new ResourceNotFoundException("Lead no encontrado con id: " + leadId);
+        }
         return interactionRepository
                 .findByLeadIdOrderByCreatedAtDesc(leadId, pageable)
                 .map(this::toResponse);
