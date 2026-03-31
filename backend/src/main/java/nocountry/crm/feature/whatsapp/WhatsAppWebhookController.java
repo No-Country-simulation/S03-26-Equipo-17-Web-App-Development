@@ -64,9 +64,19 @@ public class WhatsAppWebhookController {
 
         leadService.procesarMensajeWhatsApp(telefono, nombre, mensaje);
 
-        // Twilio requires an empty TwiML response to not auto-reply
+        // Build TwiML reply
+        String replyMessage = String.format(
+                "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
+                lead.getNombre()
+        );
+
+        String twiml = String.format(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>%s</Message></Response>",
+                replyMessage
+        );
+
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
-                .body("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>");
+                .body(twiml);
     }
 }
