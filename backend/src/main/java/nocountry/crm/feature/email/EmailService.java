@@ -25,6 +25,12 @@ public class EmailService {
      */
     @Async
     public void sendWelcomeEmail(String toEmail, String leadName) {
+        log.info("=== INICIANDO ENVIO DE EMAIL ===");
+        log.info("Destinatario: {}", toEmail);
+        log.info("Nombre del lead: {}", leadName);
+        log.info("Email remitente configurado: {}", fromEmail);
+        log.info("SMTP host: smtp.gmail.com");
+        log.info("SMTP port: 465");
         try {
             MimeMessage message = mailSender.createMimeMessage();
             // true indica que es un mensaje "multipart" (necesario para HTML)
@@ -44,9 +50,21 @@ public class EmailService {
             log.info("Email de bienvenida enviado exitosamente a {} vía SMTP", toEmail);
 
         } catch (MessagingException e) {
-            log.error("Error al construir el email para {}: {}", toEmail, e.getMessage());
+            log.error("Error al construir el email para {}: Mensaje={}", toEmail, e.getMessage());
+            log.error("Stack trace completo:", e);
+            // Detectar tipos específicos de errores
+            if (e.getMessage() != null && e.getMessage().contains("Connection")) {
+                log.error("ERROR DE CONEXIÓN SMTP: Verificar red/servidor/firewall");
+            } else if (e.getMessage() != null && e.getMessage().contains("Authentication")) {
+                log.error("ERROR DE AUTENTICACIÓN: Verificar usuario y contraseña SMTP");
+            }
         } catch (Exception e) {
-            log.error("Error inesperado al enviar email a {}: {}", toEmail, e.getMessage());
+            log.error("Error inesperado al enviar email a {}: Tipo={}, Mensaje={}", toEmail, e.getClass().getSimpleName(), e.getMessage());
+            log.error("Stack trace completo:", e);
+            // Si es un error de timeout (common en producción)
+            if (e.getMessage() != null && (e.getMessage().contains("timeout") || e.getMessage().contains("timed out"))) {
+                log.error("TIMEOUT DETECTADO: El servidor SMTP no responde. Possible problema: IP bloqueada por Gmail o firewall");
+            }
         }
     }
 
