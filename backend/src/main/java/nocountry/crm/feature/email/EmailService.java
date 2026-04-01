@@ -1,69 +1,117 @@
 package nocountry.crm.feature.email;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    @Value("${app.mail.from}")
+    @Value("${app.brevo.api.key}")
+    private String brevoApiKey;
+
+    @Value("${app.brevo.from.email:noreply@brevo.com}")
     private String fromEmail;
 
+    @Value("${app.brevo.from.name:CRM Team}")
+    private String fromName;
+
+    public EmailService() {
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
+    }
+
     /**
-     * Envía un correo de bienvenida usando SMTP.
+     * Envía un correo de bienvenida usando Brevo API via HTTP.
      */
     @Async
     public void sendWelcomeEmail(String toEmail, String leadName) {
-        log.info("=== INICIANDO ENVIO DE EMAIL ===");
+        log.info("=== INICIANDO ENVIO DE EMAIL VIA BREVO (HTTP) ===");
         log.info("Destinatario: {}", toEmail);
         log.info("Nombre del lead: {}", leadName);
-        log.info("Email remitente configurado: {}", fromEmail);
-        log.info("SMTP host: smtp.gmail.com");
-        log.info("SMTP port: 465");
+        log.info("Email remitente: {} ({})", fromEmail, fromName);
+        log.info("API Key configurada: {}", brevoApiKey != null && !brevoApiKey.isEmpty() ? "YES" : "NO");
+
+        if (brevoApiKey == null || brevoApiKey.isEmpty()) {
+            log.error("ERROR: BREVO_API_KEY no está configurada");
+            return;
+        }
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            // true indica que es un mensaje "multipart" (necesario para HTML)
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("¡Gracias por contactarnos, " + leadName + "!");
-
-            // Aquí generamos el contenido HTML
+            // Construir el contenido HTML
             String htmlContent = buildWelcomeHtml(leadName);
 
-            // true en el segundo parámetro indica que el contenido es HTML
-            helper.setText(htmlContent, true);
+            // Crear el body del request usando Map
+            Map<String, Object> emailData = new HashMap<>();
 
-            mailSender.send(message);
-            log.info("Email de bienvenida enviado exitosamente a {} vía SMTP", toEmail);
+            // Sender info
+            Map<String, String> sender = new HashMap<>();
+            sender.put("name", fromName);
+            sender.put("email", fromEmail);
+            emailData.put("sender", sender);
 
-        } catch (MessagingException e) {
-            log.error("Error al construir el email para {}: Mensaje={}", toEmail, e.getMessage());
-            log.error("Stack trace completo:", e);
-            // Detectar tipos específicos de errores
-            if (e.getMessage() != null && e.getMessage().contains("Connection")) {
-                log.error("ERROR DE CONEXIÓN SMTP: Verificar red/servidor/firewall");
-            } else if (e.getMessage() != null && e.getMessage().contains("Authentication")) {
-                log.error("ERROR DE AUTENTICACIÓN: Verificar usuario y contraseña SMTP");
+            // To recipients (array of objects)
+            Map<String, String> recipient = new HashMap<>();
+            recipient.put("email", toEmail);
+            recipient.put("name", leadName);
+            emailData.put("to", List.of(recipient));
+
+            // Subject and HTML
+            emailData.put("subject", "¡Gracias por contactarnos, " + leadName + "!");
+            emailData.put("htmlContent", htmlContent);
+
+            // Convertir a JSON usando ObjectMapper
+            String requestBody = objectMapper.writeValueAsString(emailData);
+
+            // Configurar headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", brevoApiKey);
+
+            // Crear request
+            HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+
+            // Enviar request a Brevo API
+            String apiUrl = "https://api.brevo.com/v3/smtp/email";
+            ResponseEntity<String> response = restTemplate.exchange(
+                    apiUrl,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.CREATED || response.getStatusCode() == HttpStatus.OK) {
+                log.info("Email enviado exitosamente a {}", toEmail);
+                log.info("=== EMAIL ENVIADO VIA BREVO ===");
+            } else {
+                log.error("Error al enviar email: Status={}, Body={}", response.getStatusCode(), response.getBody());
             }
+
         } catch (Exception e) {
-            log.error("Error inesperado al enviar email a {}: Tipo={}, Mensaje={}", toEmail, e.getClass().getSimpleName(), e.getMessage());
+            log.error("Error al enviar email a {}: Tipo={}, Mensaje={}", toEmail, e.getClass().getSimpleName(), e.getMessage());
             log.error("Stack trace completo:", e);
-            // Si es un error de timeout (common en producción)
-            if (e.getMessage() != null && (e.getMessage().contains("timeout") || e.getMessage().contains("timed out"))) {
-                log.error("TIMEOUT DETECTADO: El servidor SMTP no responde. Possible problema: IP bloqueada por Gmail o firewall");
+
+            // Detectar tipos específicos de errores
+            if (e.getMessage() != null) {
+                if (e.getMessage().contains("401") || e.getMessage().contains("unauthorized")) {
+                    log.error("ERROR DE AUTENTICACIÓN: API key de Brevo inválida o expirada");
+                } else if (e.getMessage().contains("timeout") || e.getMessage().contains("timed out")) {
+                    log.error("TIMEOUT: El servidor de Brevo no responde");
+                } else if (e.getMessage().contains("403") || e.getMessage().contains("forbidden")) {
+                    log.error("ERROR DE PERMISOS: Verificar permisos de la API key");
+                }
             }
         }
     }
@@ -75,8 +123,8 @@ public class EmailService {
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
                         <h2 style="color: #2c3e50;">¡Hola, %s!</h2>
-                        <p>Gracias por comunicarte con nosotros. Hemos recibido tu mensaje y uno de nuestros asesores se pondrá en contacto contigo a la brevedad.</p>
-                        <p>En nuestro CRM nos tomamos en serio tu tiempo, así que no tardaremos.</p>
+                        <p>Gracias por comunicarte con nosotros. Hemos recibido tu mensaje y uno de nuestros asesores se pondra en contacto contigo a la brevedad.</p>
+                        <p>En nuestro CRM nos tomamos en serio tu tiempo, asi que no tardaremos.</p>
                         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                         <p style="font-size: 0.9em; color: #7f8c8d;">Si tienes alguna pregunta urgente, puedes responder directamente a este correo.</p>
                         <p><strong>El equipo de CRM</strong></p>
