@@ -1,18 +1,22 @@
 package nocountry.crm.feature.lead;
 
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.auth.entity.User;
 import nocountry.crm.feature.email.EmailService;
 import nocountry.crm.feature.interaction.InteractionService;
 import nocountry.crm.feature.interaction.InteractionType;
 import nocountry.crm.shared.exception.BusinessRuleException;
 import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -97,16 +101,26 @@ public class LeadService {
 
     //Conectar con R2
     @Transactional
-    public void eliminarLead(Long id, Long userId) {
+    public void eliminarLead(Long id) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
 
+        UUID currentUserId = getCurrentUserId();
+        
         lead.setDeletedAt(LocalDateTime.now());
-        lead.setDeletedBy(userId);
+        lead.setDeletedBy(currentUserId);
         leadRepository.save(lead);
 
         interactionService.register(id, InteractionType.CAMBIO_ESTADO,
-                "Lead eliminado (Soft Delete) por usuario ID: " + userId);
+                "Lead eliminado (Soft Delete) por usuario ID: " + currentUserId);
+    }
+
+    private UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            return ((User) authentication.getPrincipal()).getId();
+        }
+        throw new IllegalStateException("Usuario no autenticado");
     }
 
     @Scheduled(cron = "0 0 * * * *")
