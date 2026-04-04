@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "leads")
@@ -43,7 +44,7 @@ public class Lead {
     private LocalDateTime lastActivity = LocalDateTime.now();
 
     @Column(name = "deleted_by")
-    private Long deletedBy;
+    private UUID deletedBy;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

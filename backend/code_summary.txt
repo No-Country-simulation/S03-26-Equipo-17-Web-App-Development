@@ -7,10 +7,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import javax.sql.DataSource;
 
 @SpringBootApplication
+@EnableAsync
 public class CrmApplication {
 
 	public static void main(String[] args) {
@@ -25,59 +27,140 @@ public class CrmApplication {
 --- FILE: src/main/java/nocountry/crm/feature/email/EmailService.java ---
 package nocountry.crm.feature.email;
 
-import com.resend.Resend;
-import com.resend.services.emails.model.CreateEmailOptions;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
 
 @Service
 @Slf4j
 public class EmailService {
 
-    private final Resend resend;
-    private final String fromEmail;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    public EmailService(
-            @Value("${resend.api-key}") String apiKey,
-            @Value("${resend.from-email}") String fromEmail) {
-        this.resend = new Resend(apiKey);
-        this.fromEmail = fromEmail;
+    @Value("${app.brevo.api.key}")
+    private String brevoApiKey;
+
+    @Value("${app.brevo.from.email:noreply@brevo.com}")
+    private String fromEmail;
+
+    @Value("${app.brevo.from.name:CRM Team}")
+    private String fromName;
+
+    public EmailService() {
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * Sends a welcome email to a newly created Lead.
-     * Called by WhatsAppWebhookController after creating a Lead with email.
+     * Envía un correo de bienvenida usando Brevo API via HTTP.
      */
+    @Async
     public void sendWelcomeEmail(String toEmail, String leadName) {
-        try {
-            CreateEmailOptions email = CreateEmailOptions.builder()
-                    .from(fromEmail)
-                    .to(toEmail)
-                    .subject("¡Gracias por contactarnos, " + leadName + "!")
-                    .html(buildWelcomeHtml(leadName))
-                    .build();
+        log.info("=== INICIANDO ENVIO DE EMAIL VIA BREVO (HTTP) ===");
+        log.info("Destinatario: {}", toEmail);
+        log.info("Nombre del lead: {}", leadName);
+        log.info("Email remitente: {} ({})", fromEmail, fromName);
+        log.info("API Key configurada: {}", brevoApiKey != null && !brevoApiKey.isEmpty() ? "YES" : "NO");
 
-            resend.emails().send(email);
-            log.info("Welcome email sent to {}", toEmail);
+        if (brevoApiKey == null || brevoApiKey.isEmpty()) {
+            log.error("ERROR: BREVO_API_KEY no está configurada");
+            return;
+        }
+
+        try {
+            // Construir el contenido HTML
+            String htmlContent = buildWelcomeHtml(leadName);
+
+            // Crear el body del request usando Map
+            Map<String, Object> emailData = new HashMap<>();
+
+            // Sender info
+            Map<String, String> sender = new HashMap<>();
+            sender.put("name", fromName);
+            sender.put("email", fromEmail);
+            emailData.put("sender", sender);
+
+            // To recipients (array of objects)
+            Map<String, String> recipient = new HashMap<>();
+            recipient.put("email", toEmail);
+            recipient.put("name", leadName);
+            emailData.put("to", List.of(recipient));
+
+            // Subject and HTML
+            emailData.put("subject", "¡Gracias por contactarnos, " + leadName + "!");
+            emailData.put("htmlContent", htmlContent);
+
+            // Convertir a JSON usando ObjectMapper
+            String requestBody = objectMapper.writeValueAsString(emailData);
+
+            // Configurar headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", brevoApiKey);
+
+            // Crear request
+            HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+
+            // Enviar request a Brevo API
+            String apiUrl = "https://api.brevo.com/v3/smtp/email";
+            ResponseEntity<String> response = restTemplate.exchange(
+                    apiUrl,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.CREATED || response.getStatusCode() == HttpStatus.OK) {
+                log.info("Email enviado exitosamente a {}", toEmail);
+                log.info("=== EMAIL ENVIADO VIA BREVO ===");
+            } else {
+                log.error("Error al enviar email: Status={}, Body={}", response.getStatusCode(), response.getBody());
+            }
 
         } catch (Exception e) {
-            // Log but don't fail the main flow — email is best-effort
-            log.error("Failed to send welcome email to {}: {}", toEmail, e.getMessage());
+            log.error("Error al enviar email a {}: Tipo={}, Mensaje={}", toEmail, e.getClass().getSimpleName(), e.getMessage());
+            log.error("Stack trace completo:", e);
+
+            // Detectar tipos específicos de errores
+            if (e.getMessage() != null) {
+                if (e.getMessage().contains("401") || e.getMessage().contains("unauthorized")) {
+                    log.error("ERROR DE AUTENTICACIÓN: API key de Brevo inválida o expirada");
+                } else if (e.getMessage().contains("timeout") || e.getMessage().contains("timed out")) {
+                    log.error("TIMEOUT: El servidor de Brevo no responde");
+                } else if (e.getMessage().contains("403") || e.getMessage().contains("forbidden")) {
+                    log.error("ERROR DE PERMISOS: Verificar permisos de la API key");
+                }
+            }
         }
     }
 
     private String buildWelcomeHtml(String nombre) {
         return """
-                <h2>¡Hola, %s!</h2>
-                <p>Gracias por comunicarte con nosotros. Uno de nuestros asesores se pondrá en contacto contigo a la brevedad.</p>
-                <p>Mientras tanto, si tenés alguna pregunta, podés responder a este correo.</p>
-                <br>
-                <p><strong>El equipo de CRM</strong></p>
+                <!DOCTYPE html>
+                <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                        <h2 style="color: #2c3e50;">¡Hola, %s!</h2>
+                        <p>Gracias por comunicarte con nosotros. Hemos recibido tu mensaje y uno de nuestros asesores se pondra en contacto contigo a la brevedad.</p>
+                        <p>En nuestro CRM nos tomamos en serio tu tiempo, asi que no tardaremos.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 0.9em; color: #7f8c8d;">Si tienes alguna pregunta urgente, puedes responder directamente a este correo.</p>
+                        <p><strong>El equipo de CRM</strong></p>
+                    </div>
+                </body>
+                </html>
                 """.formatted(nombre);
     }
 }
-
 
 
 --- FILE: src/main/java/nocountry/crm/feature/interaction/Interaction.java ---
@@ -223,7 +306,9 @@ public class InteractionResponse {
 package nocountry.crm.feature.interaction;
 
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.lead.LeadRepository;
 import nocountry.crm.feature.lead.LeadService;
+import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -233,14 +318,16 @@ import org.springframework.stereotype.Service;
 public class InteractionService {
 
     private final InteractionRepository interactionRepository;
-    private final LeadService leadService;
+    private final LeadRepository leadRepository;
 
     /**
      * Returns the interaction history of a Lead, ordered by date descending.
      * Throws ResourceNotFoundException if the Lead does not exist.
      */
     public Page<InteractionResponse> getHistory(Long leadId, Pageable pageable) {
-        leadService.obtenerPorId(leadId); // validates lead exists
+        if(!leadRepository.existsById(leadId)) {
+            throw new ResourceNotFoundException("Lead no encontrado con id: " + leadId);
+        }
         return interactionRepository
                 .findByLeadIdOrderByCreatedAtDesc(leadId, pageable)
                 .map(this::toResponse);
@@ -389,6 +476,14 @@ public class LeadController {
         return ResponseEntity.status(HttpStatus.CREATED).body(leadService.crearLead(request));
     }
 
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar datos de un lead", description = "Permite editar nombre, email o teléfono")
+    public ResponseEntity<LeadResponse> actualizarLead(
+            @PathVariable Long id,
+            @Valid @RequestBody LeadRequest request) {
+        return ResponseEntity.ok(leadService.actualizarDatos(id, request));
+    }
+
     @GetMapping
     @Operation(summary = "Listar todos los leads", description = "Obtiene una lista de todos los leads registrados")
     @ApiResponses(value = {
@@ -506,10 +601,12 @@ public class LeadMapper {
 --- FILE: src/main/java/nocountry/crm/feature/lead/LeadRepository.java ---
 package nocountry.crm.feature.lead;
 
+import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -524,6 +621,25 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
 
     @Query("SELECT l FROM Lead l WHERE l.estado = :estado AND l.stale = false AND l.lastActivity < :limite")
     List<Lead> buscarCandidatosAStale(EstadoLead estado, LocalDateTime limite);
+
+    // Esta consulta cuenta todos los Leads por estado de una sola vez.
+    @Query("""
+            SELECT l.estado,
+            COUNT(l) from Lead l
+            WHERE l.createdAt BETWEEN
+            :from AND :to
+            GROUP BY l.estado
+            """)
+    List<Object[]> countLeadsByStatus(LocalDateTime from, LocalDateTime to);
+
+    //Consulta para contar los Leads inactivos
+    @Query("""
+            SELECT COUNT(l) FROM
+            Lead l WHERE l.stale = true
+            AND l.createdAt BETWEEN
+            :from AND :to
+            """)
+    long countStaleLeadsInRange(LocalDateTime from, LocalDateTime to);
 }
 
 
@@ -581,10 +697,14 @@ public class LeadResponse {
 package nocountry.crm.feature.lead;
 
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.email.EmailService;
+import nocountry.crm.feature.interaction.InteractionService;
+import nocountry.crm.feature.interaction.InteractionType;
 import nocountry.crm.shared.exception.BusinessRuleException;
 import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -596,14 +716,46 @@ public class LeadService {
 
     private final LeadRepository leadRepository;
     private final LeadMapper leadMapper;
+    private final InteractionService interactionService;
+    private final EmailService emailService;
 
+    @Transactional
     public LeadResponse crearLead(LeadRequest request) {
         if (request.telefono() != null && leadRepository.findByTelefono(request.telefono()).isPresent()) {
             throw new BusinessRuleException("Ya existe un Lead con el telefono: " + request.telefono());
         }
         Lead lead = leadMapper.toEntity(request);
         Lead guardado = leadRepository.save(lead);
+
+        if (guardado.getEmail() != null && !guardado.getEmail().isBlank()) {
+            enviarEmailBienvenida(guardado);
+        }
+
         return leadMapper.toResponse(guardado);
+    }
+
+    @Transactional
+    public LeadResponse actualizarDatos(Long id, LeadRequest request) {
+        Lead lead = leadRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado"));
+
+        // Detectar si estamos agregando el email por primera vez
+        boolean noTeniaEmail = (lead.getEmail() == null || lead.getEmail().isBlank());
+        boolean ahoraTieneEmail = (request.email() != null && !request.email().isBlank());
+
+        lead.setNombre(request.nombre());
+        lead.setEmail(request.email());
+        lead.setTelefono(request.telefono());
+        lead.setLastActivity(LocalDateTime.now());
+
+        Lead actualizado = leadRepository.save(lead);
+
+        // Si antes no tenía y ahora sí, enviamos el email de bienvenida automáticamente
+        if (noTeniaEmail && ahoraTieneEmail) {
+            enviarEmailBienvenida(actualizado);
+        }
+
+        return leadMapper.toResponse(actualizado);
     }
 
     public List<LeadResponse> listarLeads() {
@@ -616,9 +768,12 @@ public class LeadService {
         return leadMapper.toResponse(lead);
     }
 
+    @Transactional
     public LeadResponse cambiarEstado(Long id, EstadoLead nuevoEstado) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
+
+        EstadoLead estadoAnterior = lead.getEstado();
 
         if (nuevoEstado == EstadoLead.CLIENTE && (lead.getEmail() == null || lead.getEmail().isBlank())) {
             throw new BusinessRuleException("No se puede pasar a CLIENTE sin un email registrado");
@@ -627,10 +782,17 @@ public class LeadService {
         lead.setEstado(nuevoEstado);
         lead.setLastActivity(LocalDateTime.now());
         Lead actualizado = leadRepository.save(lead);
+
+        interactionService.register(
+                lead.getId(),
+                InteractionType.CAMBIO_ESTADO,
+                estadoAnterior.name() + " → " + nuevoEstado.name()
+        );
         return leadMapper.toResponse(actualizado);
     }
 
     //Conectar con R2
+    @Transactional
     public void eliminarLead(Long id, Long userId) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
@@ -638,6 +800,9 @@ public class LeadService {
         lead.setDeletedAt(LocalDateTime.now());
         lead.setDeletedBy(userId);
         leadRepository.save(lead);
+
+        interactionService.register(id, InteractionType.CAMBIO_ESTADO,
+                "Lead eliminado (Soft Delete) por usuario ID: " + userId);
     }
 
     @Scheduled(cron = "0 0 * * * *")
@@ -652,18 +817,228 @@ public class LeadService {
         leadRepository.saveAll(leadsInactivos);
     }
 
+    @Transactional
     public LeadResponse marcarAtendido(Long id) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
 
+        EstadoLead estadoAnterior = lead.getEstado();
+
         lead.setStale(false);
+        if (lead.getEstado() == EstadoLead.NUEVO) {
+            lead.setEstado(EstadoLead.EN_SEGUIMIENTO);
+        }
         lead.setLastActivity(LocalDateTime.now());
-        return leadMapper.toResponse(leadRepository.save(lead));
+
+        Lead guardado = leadRepository.save(lead);
+
+        String mensajeHistorial = (estadoAnterior != lead.getEstado())
+                ? "Lead atendido. El estado cambió automáticamente de " + estadoAnterior + " a " + lead.getEstado()
+                : "Lead marcado como atendido (se limpió la alerta de inactividad)";
+
+        interactionService.register(id, InteractionType.CAMBIO_ESTADO, mensajeHistorial);
+
+        return  leadMapper.toResponse(guardado);
     }
 
     // Coordination method for R3 (WhatsApp integration)
     public Optional<LeadResponse> findByTelefono(String telefono) {
         return leadRepository.findByTelefono(telefono).map(leadMapper::toResponse);
+    }
+
+    @Transactional
+    public LeadResponse procesarMensajeWhatsApp(String telefono, String nombre, String mensaje) {
+        Lead lead = leadRepository.findByTelefono(telefono)
+                .orElseGet(() -> {
+                    Lead nuevo = new Lead();
+                    nuevo.setNombre(nombre);
+                    nuevo.setTelefono(telefono);
+                    return leadRepository.save(nuevo);
+                });
+
+        lead.setLastActivity(LocalDateTime.now());
+
+
+        if (lead.getEstado() == EstadoLead.PERDIDO) {
+            lead.setEstado(EstadoLead.EN_SEGUIMIENTO);
+        }
+
+        leadRepository.save(lead);
+
+        interactionService.register(lead.getId(), InteractionType.WHATSAPP, mensaje);
+
+        return leadMapper.toResponse(lead);
+    }
+
+    private void enviarEmailBienvenida(Lead lead) {
+        emailService.sendWelcomeEmail(lead.getEmail(), lead.getNombre());
+        interactionService.register(lead.getId(), InteractionType.EMAIL,
+                "Email de bienvenida enviado a: " + lead.getEmail());
+    }
+}
+
+
+
+--- FILE: src/main/java/nocountry/crm/feature/metrics/MetricsController.java ---
+package nocountry.crm.feature.metrics;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+@RequestMapping("api/v1/metrics")
+@RequiredArgsConstructor
+@Tag(name = "Metrics", description = "Endpoints para Dashboard y reportes.")
+public class MetricsController {
+
+    private final MetricsService metricsService;
+
+    @GetMapping("/stats")
+    @Operation(
+            summary = "Obtener estadísticas",
+            description = "Calcula métricas globales, conversiones y leads filtrado por fechas.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estadísticas calculadas con éxito.",
+                    content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = MetricsResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Rago de fechas inválido o formato incorrecto."),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor.")
+    })
+    public ResponseEntity<MetricsResponse> obtenerEstadisticas (@Valid MetricsFilter filter) {
+
+        return ResponseEntity.ok(metricsService.getGlobalStats(filter));
+    }
+}
+
+
+
+--- FILE: src/main/java/nocountry/crm/feature/metrics/MetricsFilter.java ---
+package nocountry.crm.feature.metrics;
+
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
+
+public record MetricsFilter(
+        @NotNull(message = "La fecha de inicio es obligatoria")
+        @Parameter(description = "Desde", example = "2025-01-01")
+        LocalDate from,
+
+        @NotNull(message = "La fecha de fin es obligatoria")
+        @Parameter(description = "Hasta", example = "2025-12-31")
+        LocalDate to
+) {
+}
+
+
+
+--- FILE: src/main/java/nocountry/crm/feature/metrics/MetricsResponse.java ---
+package nocountry.crm.feature.metrics;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.time.LocalDate;
+import java.util.Map;
+
+@Schema(description = "Contiene las estadísticas detalladas del CRM.")
+public record MetricsResponse(
+
+    @Schema(description = "Leads registrados en el periodo seleccionado.", example = "150")
+    long totalLeads,
+
+    @Schema(description = "Leads agrupados según su estado actual.",
+            example = "{\"NUEVO\": 50, \"EN_SEGUIMIENTO\": 70, \"CLIENTE\": 30 }")
+    Map<String, Long> leadsByStatus,
+
+    @Schema(description = "Porcentaje de Leads que cambiaron su estado a CLIENTE", example = "20.5")
+    double conversionRate,
+
+    @Schema(description = "Leads que no han tenido interacción reciente.", example = "12")
+    long staleLeadsCount,
+
+    @Schema(description = "Fecha inicial del reporte." , example = "2024-01-01")
+    LocalDate from,
+
+    @Schema(description = "Fecha final del reporte.", example = "2024-03-26")
+    LocalDate to
+    ){}
+
+
+
+--- FILE: src/main/java/nocountry/crm/feature/metrics/MetricsService.java ---
+package nocountry.crm.feature.metrics;
+
+import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.lead.LeadRepository;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class MetricsService {
+
+    private final LeadRepository leadRepository;
+
+
+    public MetricsResponse getGlobalStats(MetricsFilter filter) {
+
+        //Se covierte de LocalDate a LocalDateTime para evitar errores con la base de datos
+        LocalDateTime startOfDay = filter.from().atStartOfDay();
+        LocalDateTime endOfDay = filter.to().atTime(LocalTime.MAX);
+
+        List<Object[]> results = leadRepository.countLeadsByStatus(startOfDay, endOfDay);
+        long staleCount = leadRepository.countStaleLeadsInRange(startOfDay, endOfDay);
+
+        Map<String, Long> statsByStatus = new HashMap<>();
+        long totalLeads = 0;
+
+        for (Object[] row : results) {
+            //row[0] es el LeadStatus (Eenum)
+            String statusName = row[0].toString();
+            //row[1] es el Count (Long)
+            Long count = (Long) row[1];
+
+            statsByStatus.put(statusName, count);
+            totalLeads += count;
+        }
+
+        long leads = statsByStatus.getOrDefault("LEAD", 0L);
+        double conversionRate = calculateConversionRate(totalLeads, leads);
+
+        return new MetricsResponse(
+                totalLeads,
+                statsByStatus,
+                conversionRate,
+                staleCount,
+                filter.from(),
+                filter.to()
+        );
+    }
+
+    private double calculateConversionRate(long total, long converted) {
+        if (total == 0) {
+            return 0.0;
+        }
+        double rate = ((double) converted / total) * 100;
+
+        return Math.round(rate * 100.0) / 100.0;
     }
 }
 
@@ -716,12 +1091,12 @@ public class WhatsAppWebhookController {
     @Operation(
         summary = "Twilio WhatsApp webhook",
         description = """
-            Receives POST from Twilio when a WhatsApp message arrives.
-            Automatically creates a new Lead if the phone number is not registered,
-            or updates lastActivity if it already exists.
-            Registers the message in the interaction history (type: WHATSAPP).
-            If the Lead has an email, sends a welcome email via Resend.
-            Returns an empty TwiML response as required by Twilio.
+            Recibe POST de Twilio cuando llega un mensaje de WhatsApp.
+            Crea automáticamente un nuevo Lead si el número de teléfono no está registrado,
+            o actualiza lastActivity si ya existe.
+            Registra el mensaje en el historial de interacciones (tipo: WHATSAPP).
+            Si el Lead tiene un correo electrónico, envía un correo de bienvenida a través de Resend.
+            Devuelve una respuesta TwiML vacía según lo requiere Twilio.
             """,
         responses = {
             @ApiResponse(responseCode = "200", description = "Webhook processed successfully")
@@ -734,30 +1109,22 @@ public class WhatsAppWebhookController {
         String nombre = request.ProfileName() != null ? request.ProfileName() : "WhatsApp User";
         String mensaje = request.Body();
 
-        // Find existing lead or create new one
-        LeadResponse lead = leadService.findByTelefono(telefono)
-                .orElseGet(() -> {
-                    LeadResponse nuevoLead = leadService.crearLead(
-                            new LeadRequest(nombre, null, telefono)
-                    );
-                    log.info("New lead created from WhatsApp: id={}", nuevoLead.getId());
-                    return nuevoLead;
-                });
+        leadService.procesarMensajeWhatsApp(telefono, nombre, mensaje);
 
-        // Register the WhatsApp message in interaction history
-        interactionService.register(lead.getId(), InteractionType.WHATSAPP, mensaje);
+        // Build TwiML reply
+        String replyMessage = String.format(
+                "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
+                nombre
+        );
 
-        // Send welcome email only if lead has email (new leads from WhatsApp don't have one by default)
-        if (lead.getEmail() != null && !lead.getEmail().isBlank()) {
-            emailService.sendWelcomeEmail(lead.getEmail(), lead.getNombre());
-            interactionService.register(lead.getId(), InteractionType.EMAIL,
-                    "Welcome email sent to " + lead.getEmail());
-        }
+        String twiml = String.format(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>%s</Message></Response>",
+                replyMessage
+        );
 
-        // Twilio requires an empty TwiML response to not auto-reply
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
-                .body("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>");
+                .body(twiml);
     }
 }
 

@@ -109,10 +109,8 @@ public class LeadController {
     })
     public ResponseEntity<Void> eliminarLead(
             @Parameter(description = "ID del lead a eliminar", required = true)
-            @PathVariable Long id,
-            @Parameter(description = "ID del usuario que realiza la eliminación", required = true)
-            @RequestParam Long userId) {
-        leadService.eliminarLead(id, userId);
+            @PathVariable Long id) {
+        leadService.eliminarLead(id);
         return ResponseEntity.noContent().build();
     }
 

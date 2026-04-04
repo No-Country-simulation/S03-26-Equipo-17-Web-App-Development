@@ -39,7 +39,7 @@ public class MetricsService {
             totalLeads += count;
         }
 
-        long leads = statsByStatus.getOrDefault("LEAD", 0L);
+        long leads = statsByStatus.getOrDefault("CLIENTE", 0L);
         double conversionRate = calculateConversionRate(totalLeads, leads);
 
         return new MetricsResponse(
