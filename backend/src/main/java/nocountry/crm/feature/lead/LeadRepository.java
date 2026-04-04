@@ -39,4 +39,7 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
             :from AND :to
             """)
     long countStaleLeadsInRange(LocalDateTime from, LocalDateTime to);
+
+    //Consulta los Leads entre los rangos de fechas definidos.
+    List<Lead> findByCreatedAtBetween (LocalDateTime from, LocalDateTime to);
 }
