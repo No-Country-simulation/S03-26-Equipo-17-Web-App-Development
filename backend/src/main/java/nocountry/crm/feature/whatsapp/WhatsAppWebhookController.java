@@ -73,7 +73,7 @@ public class WhatsAppWebhookController {
                 });
 
         // Register the WhatsApp message in interaction history
-        interactionService.register(lead.getId(), InteractionType.WHATSAPP, mensaje);
+        interactionService.register(lead.getId(), InteractionType.WHATSAPP_INCOMING, mensaje);
 
         // Send welcome email only if lead has email (new leads from WhatsApp don't have one by default)
         if (lead.getEmail() != null && !lead.getEmail().isBlank()) {
@@ -82,16 +82,13 @@ public class WhatsAppWebhookController {
                     "Welcome email sent to " + lead.getEmail());
         }
 
-        // Build TwiML reply
-        String replyMessage = String.format(
-                "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
-                lead.getNombre()
-        );
-
-        String twiml = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>%s</Message></Response>",
-                replyMessage
-        );
+        // Acuse de recibo automático - el asesor responderá manualmente desde el CRM
+        String twiml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Response>
+                    <Message>✅ Mensaje recibido. Un asesor te responderá pronto.</Message>
+                </Response>
+                """;
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)

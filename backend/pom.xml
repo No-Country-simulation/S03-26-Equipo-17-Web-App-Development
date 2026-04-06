@@ -103,6 +103,13 @@
 			<artifactId>spring-dotenv</artifactId>
 			<version>3.0.0</version>
 		</dependency>
+
+		<!-- Twilio SDK - WhatsApp outgoing messages -->
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>10.6.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>

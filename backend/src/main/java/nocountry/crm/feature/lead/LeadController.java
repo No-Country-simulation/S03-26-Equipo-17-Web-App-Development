@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.whatsapp.SendWhatsAppRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -105,6 +106,24 @@ public class LeadController {
             @Parameter(description = "ID del usuario que realiza la eliminación", required = true)
             @RequestParam Long userId) {
         leadService.eliminarLead(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/whatsapp")
+    @Operation(
+        summary = "Enviar mensaje WhatsApp al lead",
+        description = "El asesor envía un mensaje de WhatsApp al lead desde el CRM. Se registra en el historial como WHATSAPP_OUTGOING."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Mensaje enviado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Lead sin teléfono o mensaje inválido"),
+        @ApiResponse(responseCode = "404", description = "Lead no encontrado")
+    })
+    public ResponseEntity<Void> enviarWhatsApp(
+            @Parameter(description = "ID del lead destinatario", required = true)
+            @PathVariable Long id,
+            @Valid @RequestBody SendWhatsAppRequest request) {
+        leadService.responderPorWhatsApp(id, request.message());
         return ResponseEntity.noContent().build();
     }
 

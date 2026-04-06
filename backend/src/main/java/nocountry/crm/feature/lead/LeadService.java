@@ -1,6 +1,9 @@
 package nocountry.crm.feature.lead;
 
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.interaction.InteractionService;
+import nocountry.crm.feature.interaction.InteractionType;
+import nocountry.crm.feature.whatsapp.TwilioWhatsAppService;
 import nocountry.crm.shared.exception.BusinessRuleException;
 import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,6 +19,8 @@ public class LeadService {
 
     private final LeadRepository leadRepository;
     private final LeadMapper leadMapper;
+    private final InteractionService interactionService;
+    private final TwilioWhatsAppService twilioWhatsAppService;
 
     public LeadResponse crearLead(LeadRequest request) {
         if (request.telefono() != null && leadRepository.findByTelefono(request.telefono()).isPresent()) {
@@ -84,5 +89,25 @@ public class LeadService {
     // Coordination method for R3 (WhatsApp integration)
     public Optional<LeadResponse> findByTelefono(String telefono) {
         return leadRepository.findByTelefono(telefono).map(leadMapper::toResponse);
+    }
+
+    /**
+     * Envía un mensaje de WhatsApp al lead y registra la interacción como WHATSAPP_OUTGOING.
+     */
+    public void responderPorWhatsApp(Long id, String mensaje) {
+        Lead lead = leadRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
+
+        if (lead.getTelefono() == null || lead.getTelefono().isBlank()) {
+            throw new BusinessRuleException("El lead no tiene teléfono registrado");
+        }
+
+        String sid = twilioWhatsAppService.enviarMensaje(lead.getTelefono(), mensaje);
+
+        interactionService.register(lead.getId(), InteractionType.WHATSAPP_OUTGOING,
+                "[Asesor] " + mensaje + " (SID: " + sid + ")");
+
+        lead.setLastActivity(LocalDateTime.now());
+        leadRepository.save(lead);
     }
 }
