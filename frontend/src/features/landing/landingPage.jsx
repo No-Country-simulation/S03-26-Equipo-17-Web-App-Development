@@ -4,60 +4,60 @@ export const LandingPage = () => {
     return (
         <>
             {/* ----------------- Seccion Hero ------------------ */}
-            <main class="bg-white min-h-screen flex items-center justify-center overflow-hidden">
-                <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-                    <div class="flex flex-col items-center text-center lg:items-start lg:text-left">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/60 text-slate-600 text-xs sm:text-sm font-medium mb-8">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+            <main className="bg-white min-h-screen flex items-center justify-center overflow-hidden">
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                    <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/60 text-slate-600 text-xs sm:text-sm font-medium mb-8">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                             Nuevo: Integración directa con WhatsApp
                         </div>
 
-                        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
-                            Con el mejor<span class="text-[#0057D9]"></span>{" "}
-                            <span class="text-[#0057D9]">workflow</span>
+                        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
+                            Con el mejor<span className="text-[#0057D9]"></span>{" "}
+                            <span className="text-[#0057D9]">workflow</span>
                         </h1>
 
-                        <p class="text-lg text-slate-600 mb-10 max-w-xl leading-relaxed">
+                        <p className="text-lg text-slate-600 mb-10 max-w-xl leading-relaxed">
                             El CRM sofisticado para startups. Gestiona clientes potenciales
                             con precisión, interactúa en chat en tiempo real y unifica tu
                             WhatsApp y correo electrónico en un solo espacio de trabajo
                             editorial.
                         </p>
 
-                        <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                             <Link to="/register">
-                                <button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0057D9] text-white font-semibold rounded-xl shadow-blue-800/80 shadow-lg hover:bg-blue-800 transition-all duration-200">
+                                <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#0057D9] text-white font-semibold rounded-xl shadow-blue-800/80 shadow-lg hover:bg-blue-800 transition-all duration-200">
                                     Empezar
                                     <svg
-                                        class="w-4 h-4"
+                                        className="w-4 h-4"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
                                         xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
                                             d="M5 12h14M12 5l7 7-7 7"
                                         ></path>
                                     </svg>
                                 </button>
                             </Link>
 
-                            <button class="w-full sm:w-auto px-7 py-3.5 bg-slate-200 text-slate-900 font-semibold rounded-xl hover:bg-slate-300 transition-colors duration-200">
+                            <button className="w-full sm:w-auto px-7 py-3.5 bg-slate-200 text-slate-900 font-semibold rounded-xl hover:bg-slate-300 transition-colors duration-200">
                                 Video Demo
                             </button>
                         </div>
                     </div>
 
-                    <div class="relative w-full flex justify-center lg:justify-end mt-8 lg:mt-0">
-                        <div class="absolute inset-0 bg-white blur-3xl rounded-full -z-10 opacity-70 transform translate-x-10 translate-y-10"></div>
+                    <div className="relative w-full flex justify-center lg:justify-end mt-8 lg:mt-0">
+                        <div className="absolute inset-0 bg-white blur-3xl rounded-full -z-10 opacity-70 transform translate-x-10 translate-y-10"></div>
 
                         <img
                             src="./../../../public/Imagen-modo-oscuro.png"
                             alt="Interfaz oscura de Nexus CRM"
-                            class="w-full h-auto max-w-2xl rounded-2xl shadow-2xl shadow-slate-300/50 object-cover"
+                            className="w-full h-auto max-w-2xl rounded-2xl shadow-2xl shadow-slate-300/50 object-cover"
                         />
                     </div>
                 </section>
@@ -66,89 +66,89 @@ export const LandingPage = () => {
             {/* ----------------- Fin Seccion Hero ------------------ */}
 
             {/* ----------------- Seccion Post Hero ------------------ */}
-            <section class="py-24 bg-slate">
-                <div class="max-w-7xl mx-auto px-6">
-                    <div class="text-center mb-20">
-                        <h2 class="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
+            <section className="py-24 bg-slate">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
                             Todo lo que necesitas
                         </h2>
-                        <p class="text-lg text-slate-500 font-medium">
+                        <p className="text-lg text-slate-500 font-medium">
                             Herramientas esenciales diseñadas para equipos de ventas de alto
                             rendimiento.
                         </p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <article class="bg-white p-10 rounded-[2.5rem] transition-all hover:shadow-lg">
-                            <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <article className="bg-white p-10 rounded-[2.5rem] transition-all hover:shadow-lg">
+                            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-8">
                                 <svg
-                                    class="w-7 h-7 text-blue-600"
+                                    className="w-7 h-7 text-blue-600"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                                     />
                                 </svg>
                             </div>
-                            <h3 class="text-2xl font-bold text-slate-900 mb-4">
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4">
                                 Bandeja de entrada unificada
                             </h3>
-                            <p class="text-slate-500 leading-relaxed text-lg">
+                            <p className="text-slate-500 leading-relaxed text-lg">
                                 Combina WhatsApp y correo electrónico en un solo hilo
                                 organizado.
                             </p>
                         </article>
 
-                        <article class="bg-white p-10 rounded-[2.5rem] transition-all hover:shadow-lg">
-                            <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-8">
+                        <article className="bg-white p-10 rounded-[2.5rem] transition-all hover:shadow-lg">
+                            <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-8">
                                 <svg
-                                    class="w-7 h-7 text-orange-600"
+                                    className="w-7 h-7 text-orange-600"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
                                         d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                                     />
                                 </svg>
                             </div>
-                            <h3 class="text-2xl font-bold text-slate-900 mb-4">
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4">
                                 Chat en tiempo real
                             </h3>
-                            <p class="text-slate-500 leading-relaxed text-lg">
+                            <p className="text-slate-500 leading-relaxed text-lg">
                                 Integra nuestro chat ligero en tu sitio web y convierte
                                 visitantes al instante con soporte en vivo.
                             </p>
                         </article>
 
-                        <article class="bg-white p-10 rounded-[2.5rem] transition-all hover:shadow-lg">
-                            <div class="w-14 h-14 bg-slate-200 rounded-xl flex items-center justify-center mb-8">
+                        <article className="bg-white p-10 rounded-[2.5rem] transition-all hover:shadow-lg">
+                            <div className="w-14 h-14 bg-slate-200 rounded-xl flex items-center justify-center mb-8">
                                 <svg
-                                    class="w-7 h-7 text-slate-600"
+                                    className="w-7 h-7 text-slate-600"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
                                 >
                                     <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                                     />
                                 </svg>
                             </div>
-                            <h3 class="text-2xl font-bold text-slate-900 mb-4">
+                            <h3 className="text-2xl font-bold text-slate-900 mb-4">
                                 Gestión de leads
                             </h3>
-                            <p class="text-slate-500 leading-relaxed text-lg">
+                            <p className="text-slate-500 leading-relaxed text-lg">
                                 Pipelines visuales y sencillos para hacer seguimiento a tus
                                 oportunidades.
                             </p>
@@ -167,8 +167,8 @@ export const LandingPage = () => {
                         </h1>
 
                         <p className="text-gray-300 text-lg md:text-xl mb-12 max-w-2xl mx-auto">
-                            Únete a más de 2,000 startups que están haciendo crecer sus ventas
-                            con Nexus CRM.
+                            Únete a más de 2,000 startups que están haciendo crecer sus
+                            ventas con Nexus CRM.
                         </p>
 
                         <div className="flex flex-col sm:flex-row justify-center gap-4">

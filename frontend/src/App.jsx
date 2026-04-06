@@ -2,7 +2,6 @@ import "./styles/App.css";
 import { Outlet } from "react-router-dom";
 import { NavMenu } from "./components/landingPageComponents/navMenu";
 import { FooterLandingPage } from "./components/landingPageComponents/footer";
-import { LateralMenu } from "./components/CRM-Singin/lateralMenu";
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
       </main>
 
       <FooterLandingPage />
-      <LateralMenu />
     </div>
   );
 }

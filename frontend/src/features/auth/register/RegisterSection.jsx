@@ -5,23 +5,24 @@ import { Link } from "react-router-dom";
 
 export const Register = () => {
     const [formData, setFormData] = useState({
-        full_name: "",
-        username: "",
+        firstName: "",
+        lastName: "",
         email: "",
         password: "",
     });
+
+    const [setLoading] = useState(false);
+    const [setServerError] = useState("");
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // --- SOLUCIÓN: CÁLCULOS DIRECTOS (Sin useEffect) ---
-
-    // 1. Validamos el email con tu función de la imagen 7
+    // 1. Validamos el email
     const emailError = validateEmail(formData.email);
     const isEmailValid = formData.email !== "" && emailError === "";
 
-    // 2. Validamos la contraseña con tu función de la imagen 8
+    // 2. Validamos la contraseña
     const passwordStatus = validatePassword(formData.password);
     const isPasswordValid = Object.values(passwordStatus).every(Boolean);
 
@@ -30,12 +31,39 @@ export const Register = () => {
         (val) => val.trim() !== "",
     );
 
-    // 4. Creamos la variable que usará el botón (sustituye al estado que daba error)
+    // 4. Creamos la variable que usará el botón
     const isButtonDisabled = !(
         allFieldsFilled &&
         isEmailValid &&
         isPasswordValid
     );
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const response = await fetch(
+                "https://no-country-equipo-17-crm.hf.space/swagger-ui/index.html#/Autenticaci%C3%B3n/register",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData), // Ahora envía firstName, lastName, email y password
+                },
+            );
+
+            const data = await response.json();
+            if (!response.ok)
+                throw new Error(data.message || "Error en el registro");
+
+            console.log("Usuario registrado con éxito:", data);
+            // Aquí podrías guardar el token si el registro loguea automáticamente
+        } catch (err) {
+            setServerError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <>
@@ -54,13 +82,20 @@ export const Register = () => {
                     </header>
 
                     {/* Formulario */}
-                    <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         <InputField
-                            label="Nombre Completo"
-                            name="full_name"
-                            value={formData.full_name}
+                            label="Nombre"
+                            name="firstName"
+                            value={formData.firstName}
                             onChange={handleChange}
-                            placeholder="John Doe"
+                            placeholder="John"
+                        />
+                        <InputField
+                            label="Apellido"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            placeholder="Doe"
                         />
                         <InputField
                             label="Nombre de Usuario"

@@ -2,12 +2,16 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { validateEmail } from "../../../utils/validations/validationEmail";
 import { validatePassword } from "../../../utils/validations/validationPassword";
+import { useNavigate } from "react-router-dom";
 
 export const Signin = () => {
   const [showPassword] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [step, setStep] = useState(1);
   const [timer, setTimer] = useState(60);
+  const [setLoading] = useState(false);
+  const [setServerError] = useState("");
+  const navigate = useNavigate();
 
   const [values, setValues] = useState({
     email: "",
@@ -96,6 +100,48 @@ export const Signin = () => {
     (rule) => rule,
   );
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://no-country-equipo-17-crm.hf.space/swagger-ui/index.html#/Autenticaci%C3%B3n/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: values.email,
+            password: values.password,
+          }),
+        },
+      );
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken); // También te lo devuelve
+        localStorage.setItem("isLoggedIn", "true");
+
+        console.log("Token recibido:", data.accessToken);
+        navigate("./../../../protected-routes/dashboard/dashboard.jsx")
+      } else {
+        throw new Error(data.message || "Credenciales incorrectas");
+      }
+
+      // Swagger dice que "devuelve los tokens de acceso"
+      localStorage.setItem("accessToken", data.accessToken); // Revisa en Swagger el nombre exacto del campo del token
+      localStorage.setItem("isLoggedIn", "true");
+
+      window.location.href = "/dashboard"; // O usa navigate de react-router-dom
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-12">
       <div className="w-full max-w-md">
@@ -118,7 +164,7 @@ export const Signin = () => {
             Por favor, ingresa tus datos para iniciar sesión.
           </p>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Email */}
             <div>
               <label className="block text-sm text-gray-600 mb-1">Email</label>

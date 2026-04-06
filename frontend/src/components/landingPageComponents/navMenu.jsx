@@ -32,12 +32,12 @@ export const NavMenu = () => {
 
         <div className="flex items-center gap-4">
           <Link to="/signin">
-          <a
+          <span
             href="#"
             className="text-[#64748B] hover:text-[#3882F6] transition"
           >
             Iniciar Sesión
-          </a>
+          </span>
           </Link>
           
           <Link to="/register">
