@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.whatsapp.SendWhatsAppRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -112,6 +113,25 @@ public class LeadController {
             @PathVariable Long id) {
         leadService.eliminarLead(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/whatsapp")
+    @Operation(
+        summary = "Enviar mensaje de WhatsApp al lead",
+        description = "Envía un mensaje de WhatsApp al lead a través de Twilio y lo registra en el historial."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Mensaje enviado exitosamente",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = LeadResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Lead no encontrado"),
+        @ApiResponse(responseCode = "409", description = "El lead no tiene número de teléfono")
+    })
+    public ResponseEntity<LeadResponse> enviarWhatsApp(
+            @Parameter(description = "ID del lead destinatario", required = true)
+            @PathVariable Long id,
+            @Valid @RequestBody SendWhatsAppRequest request) {
+        return ResponseEntity.ok(leadService.responderPorWhatsApp(id, request.message()));
     }
 
 }

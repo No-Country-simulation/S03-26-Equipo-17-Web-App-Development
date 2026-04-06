@@ -64,16 +64,10 @@ public class WhatsAppWebhookController {
 
         leadService.procesarMensajeWhatsApp(telefono, nombre, mensaje);
 
-        // Build TwiML reply
-        String replyMessage = String.format(
-                "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
-                nombre
-        );
-
-        String twiml = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>%s</Message></Response>",
-                replyMessage
-        );
+        // Build TwiML acknowledgement
+        String twiml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<Response><Message>\u2705 Mensaje recibido. Un asesor te responderá pronto.</Message></Response>";
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
