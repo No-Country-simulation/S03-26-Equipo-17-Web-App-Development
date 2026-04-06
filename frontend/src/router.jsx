@@ -8,9 +8,9 @@ import { Register } from "./features/auth/register/RegisterSection";
 import { Chats } from "./protected-routes/chats/chats";
 import { Dashboard } from "./protected-routes/dashboard/dashboard";
 import { Contacts } from "./protected-routes/contacts/contacts";
-import { Settings } from "./protected-routes/configuracion/settings";
-import ProtectedRoute from "./protected-routes/ProtectedRoute";
-import PrivateLayout from "./privateLayout";
+import { Settings } from "./protected-routes/settings/settings";
+import ProtectedRoute from "./protected-routes/protected-route";
+import PrivateLayout from "./private-layout";
 
 export const router = createBrowserRouter([
   {
