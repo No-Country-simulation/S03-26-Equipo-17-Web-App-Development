@@ -47,6 +47,16 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    // Manejo de campo de ordenamiento inválido (400 Bad Request)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                ex.getMessage() != null ? ex.getMessage() : "Parámetro inválido");
+        problemDetail.setTitle("Parámetro inválido");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
     // 3. Manejo de Errores Genéricos (500)
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGenericException(Exception ex) {

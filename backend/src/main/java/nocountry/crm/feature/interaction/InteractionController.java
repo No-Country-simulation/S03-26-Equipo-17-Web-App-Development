@@ -9,8 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +42,11 @@ public class InteractionController {
                 schema = @Schema(implementation = InteractionResponse.class))
         ),
         @ApiResponse(
+            responseCode = "400",
+            description = "Invalid sort field. Allowed values: id, leadId, type, content, createdAt",
+            content = @Content
+        ),
+        @ApiResponse(
             responseCode = "404",
             description = "Lead not found",
             content = @Content
@@ -51,8 +55,11 @@ public class InteractionController {
     public ResponseEntity<Page<InteractionResponse>> getHistory(
             @Parameter(description = "ID of the Lead", required = true, example = "1")
             @PathVariable Long id,
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+            @Parameter(description = "Número de página (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Cantidad de registros por página", example = "20")
+            @RequestParam(defaultValue = "20") int size) {
 
-        return ResponseEntity.ok(interactionService.getHistory(id, pageable));
+        return ResponseEntity.ok(interactionService.getHistory(id, PageRequest.of(page, size)));
     }
 }
