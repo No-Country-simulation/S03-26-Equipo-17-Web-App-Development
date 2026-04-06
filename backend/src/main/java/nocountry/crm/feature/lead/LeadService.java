@@ -5,6 +5,7 @@ import nocountry.crm.feature.auth.entity.User;
 import nocountry.crm.feature.email.EmailService;
 import nocountry.crm.feature.interaction.InteractionService;
 import nocountry.crm.feature.interaction.InteractionType;
+import nocountry.crm.feature.whatsapp.TwilioWhatsAppService;
 import nocountry.crm.shared.exception.BusinessRuleException;
 import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +27,7 @@ public class LeadService {
     private final LeadMapper leadMapper;
     private final InteractionService interactionService;
     private final EmailService emailService;
+    private final TwilioWhatsAppService twilioWhatsAppService;
 
     @Transactional
     public LeadResponse crearLead(LeadRequest request) {
@@ -183,9 +185,34 @@ public class LeadService {
 
         leadRepository.save(lead);
 
-        interactionService.register(lead.getId(), InteractionType.WHATSAPP, mensaje);
+        interactionService.register(lead.getId(), InteractionType.WHATSAPP_INCOMING, mensaje);
 
         return leadMapper.toResponse(lead);
+    }
+
+    @Transactional
+    public void responderPorWhatsApp(Long leadId, String mensajeAsesor) {
+        Lead lead = leadRepository.findById(leadId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado"));
+
+        if (lead.getTelefono() == null || lead.getTelefono().isBlank()) {
+            throw new BusinessRuleException("El lead no tiene un teléfono registrado");
+        }
+
+        // 1. Enviar vía Twilio
+        twilioWhatsAppService.enviarMensaje(lead.getTelefono(), mensajeAsesor);
+
+        // 2. Registrar interacción saliente
+        UUID currentUserId = getCurrentUserId();
+        interactionService.register(
+                lead.getId(),
+                InteractionType.WHATSAPP_OUTGOING,
+                "Respuesta del asesor: " + mensajeAsesor
+        );
+
+        // 3. Actualizar actividad
+        lead.setLastActivity(LocalDateTime.now());
+        leadRepository.save(lead);
     }
 
     private void enviarEmailBienvenida(Lead lead) {

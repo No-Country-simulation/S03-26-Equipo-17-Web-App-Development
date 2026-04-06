@@ -3,6 +3,7 @@ package nocountry.crm.feature.whatsapp;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nocountry.crm.feature.email.EmailService;
@@ -13,10 +14,7 @@ import nocountry.crm.feature.lead.LeadResponse;
 import nocountry.crm.feature.lead.LeadService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/whatsapp")
@@ -64,19 +62,22 @@ public class WhatsAppWebhookController {
 
         leadService.procesarMensajeWhatsApp(telefono, nombre, mensaje);
 
-        // Build TwiML reply
-        String replyMessage = String.format(
-                "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
-                nombre
-        );
-
-        String twiml = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>%s</Message></Response>",
-                replyMessage
-        );
+        String twiml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Response>
+                    <Message>✅ Mensaje recibido. Un asesor te responderá pronto.</Message>
+                </Response>
+                """;
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
                 .body(twiml);
+    }
+
+    @PostMapping("/send")
+    @Operation(summary = "Enviar respuesta manual", description = "El asesor envía un mensaje al WhatsApp del cliente")
+    public ResponseEntity<Void> sendMessage(@Valid @RequestBody SendWhatsAppRequest request) {
+        leadService.responderPorWhatsApp(request.leadId(), request.message());
+        return ResponseEntity.ok().build();
     }
 }

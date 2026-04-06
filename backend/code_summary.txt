@@ -24,6 +24,536 @@ public class CrmApplication {
 
 
 
+--- FILE: src/main/java/nocountry/crm/feature/auth/controller/AuthController.java ---
+package nocountry.crm.feature.auth.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import nocountry.crm.feature.auth.dto.AuthResponse;
+import nocountry.crm.feature.auth.dto.LoginRequest;
+import nocountry.crm.feature.auth.dto.RefreshRequest;
+import nocountry.crm.feature.auth.dto.RegisterRequest;
+import nocountry.crm.feature.auth.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+@Tag(name = "Autenticación", description = "Endpoints para el registro, inicio de sesión y renovación de tokens de usuarios")
+public class AuthController {
+
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Registrar un nuevo usuario", description = "Crea una nueva cuenta de usuario en el CRM y devuelve los tokens de acceso")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Autentica al usuario con sus credenciales y devuelve los tokens de acceso")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Refrescar token", description = "Genera un nuevo token de acceso a partir de un refresh token válido")
+    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request.refreshToken()));
+    }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/dto/AuthResponse.java ---
+package nocountry.crm.feature.auth.dto;
+
+public record AuthResponse(
+        String accessToken,
+        String refreshToken,
+        String tokenType
+) {
+    public AuthResponse(String accessToken, String refreshToken) {
+        this(accessToken, refreshToken, "Bearer");
+    }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/dto/LoginRequest.java ---
+package nocountry.crm.feature.auth.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record LoginRequest(
+        @Email(message = "Email should be valid")
+        @NotBlank(message = "Email is required")
+        String email,
+        
+        @NotBlank(message = "Password is required")
+        String password
+) {}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/dto/RefreshRequest.java ---
+package nocountry.crm.feature.auth.dto;
+
+import jakarta.validation.constraints.NotBlank;
+
+public record RefreshRequest(
+        @NotBlank(message = "Refresh token is required")
+        String refreshToken
+) {}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/dto/RegisterRequest.java ---
+package nocountry.crm.feature.auth.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record RegisterRequest(
+        @NotBlank(message = "First name is required")
+        String firstName,
+        
+        @NotBlank(message = "Last name is required")
+        String lastName,
+        
+        @Email(message = "Email should be valid")
+        @NotBlank(message = "Email is required")
+        String email,
+        
+        @NotBlank(message = "Password is required")
+        @Size(min = 8, message = "Password must be at least 8 characters")
+        String password
+) {}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/entity/Role.java ---
+package nocountry.crm.feature.auth.entity;
+
+public enum Role {
+    ROLE_USER,
+    ROLE_ADMIN,
+    ROLE_MANAGER
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/entity/User.java ---
+package nocountry.crm.feature.auth.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Table(name = "users")
+@SQLRestriction("deleted_at IS NULL")
+@EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    @Builder.Default // Le dice a Lombok que respete este valor por defecto al usar el Builder
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @CreatedBy
+    @Column(name = "created_by", updatable = false)
+    private UUID createdBy;
+
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    private UUID updatedBy;
+
+    @Column(name = "deleted_by")
+    private UUID deletedBy;
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getPassword() { return password; }
+
+    @Override
+    public String getUsername() { return email; }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return isActive && deletedAt == null; }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/repository/UserRepository.java ---
+package nocountry.crm.feature.auth.repository;
+
+import nocountry.crm.feature.auth.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, UUID> {
+    Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/security/AuditorAwareImpl.java ---
+package nocountry.crm.feature.auth.security;
+
+import nocountry.crm.feature.auth.entity.User;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+public class AuditorAwareImpl implements AuditorAware<UUID> {
+
+    @Override
+    @NonNull
+    public Optional<UUID> getCurrentAuditor() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || 
+            !authentication.isAuthenticated() || 
+            authentication instanceof AnonymousAuthenticationToken) {
+            return Optional.empty();
+        }
+
+        User userPrincipal = (User) authentication.getPrincipal();
+        return Optional.ofNullable(userPrincipal.getId());
+    }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/security/JwtAuthenticationFilter.java ---
+package nocountry.crm.feature.auth.security;
+
+import nocountry.crm.feature.auth.repository.UserRepository;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
+
+    public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
+        this.jwtService = jwtService;
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+        
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userEmail;
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        jwt = authHeader.substring(7);
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Obtenemos el usuario de DB para validar estado (isActive, deletedAt)
+                UserDetails userDetails = userRepository.findByEmail(userEmail).orElse(null);
+
+                if (userDetails != null && jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+        } catch (Exception e) {
+            // Token inválido o expirado. El contexto de seguridad quedará null y SecurityConfig lo bloqueará.
+            logger.error("Cannot set user authentication: {}", e);
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/security/JwtService.java ---
+package nocountry.crm.feature.auth.security;
+
+import jakarta.annotation.PostConstruct;
+import nocountry.crm.feature.auth.entity.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+@Service
+public class JwtService {
+
+    @Value("${application.security.jwt.secret-key:404E635266556A586E327235753878214125442A472D4B6150645367566B5970}")
+    private String secretKey;
+
+    @Value("${application.security.jwt.expiration:86400000}") // 1 día por defecto
+    private long jwtExpiration;
+
+    @Value("${application.security.jwt.refresh-token.expiration:604800000}") // 7 días
+    private long refreshExpiration;
+
+    private SecretKey cachedSignInKey;
+
+    // Se ejecuta una sola vez cuando Spring levanta este servicio
+    @PostConstruct
+    protected void init() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.cachedSignInKey = Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    public String generateToken(User userDetails) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", userDetails.getRole().name());
+        extraClaims.put("userId", userDetails.getId().toString());
+        return buildToken(extraClaims, userDetails, jwtExpiration);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+        return Jwts.builder()
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(this.cachedSignInKey, Jwts.SIG.HS256) // Usamos la llave cacheada
+                .compact();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(this.cachedSignInKey) // Usamos la llave cacheada
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/feature/auth/service/AuthService.java ---
+package nocountry.crm.feature.auth.service;
+
+import nocountry.crm.feature.auth.dto.AuthResponse;
+import nocountry.crm.feature.auth.dto.LoginRequest;
+import nocountry.crm.feature.auth.dto.RegisterRequest;
+import nocountry.crm.feature.auth.entity.Role;
+import nocountry.crm.feature.auth.entity.User;
+import nocountry.crm.feature.auth.repository.UserRepository;
+import nocountry.crm.feature.auth.security.JwtService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       JwtService jwtService, AuthenticationManager authenticationManager) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
+    }
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Email already in use");
+        }
+
+        // Se reemplazó "new User(...)" por el patrón Builder de Lombok
+        var user = User.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .role(Role.ROLE_USER) // Rol por defecto
+                .build();
+
+        userRepository.save(user);
+
+        var jwtToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+
+        return new AuthResponse(jwtToken, refreshToken);
+    }
+
+    public AuthResponse login(LoginRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.email(),
+                        request.password()
+                )
+        );
+
+        var user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+
+        var jwtToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+
+        return new AuthResponse(jwtToken, refreshToken);
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        String userEmail = jwtService.extractUsername(refreshToken);
+
+        if (userEmail != null) {
+            var user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+            if (jwtService.isTokenValid(refreshToken, user)) {
+                var accessToken = jwtService.generateToken(user);
+                return new AuthResponse(accessToken, refreshToken);
+            }
+        }
+        throw new IllegalArgumentException("Invalid refresh token");
+    }
+}
+
+
 --- FILE: src/main/java/nocountry/crm/feature/email/EmailService.java ---
 package nocountry.crm.feature.email;
 
@@ -391,6 +921,7 @@ import lombok.Setter;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "leads")
@@ -427,7 +958,7 @@ public class Lead {
     private LocalDateTime lastActivity = LocalDateTime.now();
 
     @Column(name = "deleted_by")
-    private Long deletedBy;
+    private UUID deletedBy;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -547,10 +1078,8 @@ public class LeadController {
     })
     public ResponseEntity<Void> eliminarLead(
             @Parameter(description = "ID del lead a eliminar", required = true)
-            @PathVariable Long id,
-            @Parameter(description = "ID del usuario que realiza la eliminación", required = true)
-            @RequestParam Long userId) {
-        leadService.eliminarLead(id, userId);
+            @PathVariable Long id) {
+        leadService.eliminarLead(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -697,18 +1226,22 @@ public class LeadResponse {
 package nocountry.crm.feature.lead;
 
 import lombok.RequiredArgsConstructor;
+import nocountry.crm.feature.auth.entity.User;
 import nocountry.crm.feature.email.EmailService;
 import nocountry.crm.feature.interaction.InteractionService;
 import nocountry.crm.feature.interaction.InteractionType;
 import nocountry.crm.shared.exception.BusinessRuleException;
 import nocountry.crm.shared.exception.ResourceNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -793,16 +1326,26 @@ public class LeadService {
 
     //Conectar con R2
     @Transactional
-    public void eliminarLead(Long id, Long userId) {
+    public void eliminarLead(Long id) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead no encontrado con id: " + id));
 
+        UUID currentUserId = getCurrentUserId();
+        
         lead.setDeletedAt(LocalDateTime.now());
-        lead.setDeletedBy(userId);
+        lead.setDeletedBy(currentUserId);
         leadRepository.save(lead);
 
         interactionService.register(id, InteractionType.CAMBIO_ESTADO,
-                "Lead eliminado (Soft Delete) por usuario ID: " + userId);
+                "Lead eliminado (Soft Delete) por usuario ID: " + currentUserId);
+    }
+
+    private UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            return ((User) authentication.getPrincipal()).getId();
+        }
+        throw new IllegalStateException("Usuario no autenticado");
     }
 
     @Scheduled(cron = "0 0 * * * *")
@@ -1019,7 +1562,7 @@ public class MetricsService {
             totalLeads += count;
         }
 
-        long leads = statsByStatus.getOrDefault("LEAD", 0L);
+        long leads = statsByStatus.getOrDefault("CLIENTE", 0L);
         double conversionRate = calculateConversionRate(totalLeads, leads);
 
         return new MetricsResponse(
@@ -1111,16 +1654,12 @@ public class WhatsAppWebhookController {
 
         leadService.procesarMensajeWhatsApp(telefono, nombre, mensaje);
 
-        // Build TwiML reply
-        String replyMessage = String.format(
-                "¡Hola %s! 👋 Recibimos tu mensaje. Pronto uno de nuestros asesores se pondrá en contacto contigo.",
-                nombre
-        );
-
-        String twiml = String.format(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Message>%s</Message></Response>",
-                replyMessage
-        );
+        String twiml = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Response>
+                    <Message>✅ Mensaje recibido. Un asesor te responderá pronto.</Message>
+                </Response>
+                """;
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
@@ -1164,6 +1703,123 @@ public record WhatsAppWebhookRequest(
 
 
 
+--- FILE: src/main/java/nocountry/crm/shared/config/AuditConfig.java ---
+package nocountry.crm.shared.config;
+
+import nocountry.crm.feature.auth.security.AuditorAwareImpl;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+import java.util.UUID;
+
+@Configuration
+@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+public class AuditConfig {
+
+    @Bean
+    public AuditorAware<UUID> auditorProvider() {
+        return new AuditorAwareImpl();
+    }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/shared/config/CorsConfig.java ---
+package nocountry.crm.shared.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Configuration
+public class CorsConfig {
+
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        
+        config.setAllowCredentials(true);
+        //Cambiar esto por la URL del frontend (ej. http://localhost:5173)
+        config.setAllowedOriginPatterns(List.of("*")); 
+        config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
+}
+
+
+--- FILE: src/main/java/nocountry/crm/shared/config/GlobalExceptionHandler.java ---
+//package nocountry.crm.shared.config;
+//
+//import org.springframework.http.HttpStatus;
+//import org.springframework.http.ResponseEntity;
+//import org.springframework.security.access.AccessDeniedException;
+//import org.springframework.security.authentication.BadCredentialsException;
+//import org.springframework.validation.FieldError;
+//import org.springframework.web.bind.MethodArgumentNotValidException;
+//import org.springframework.web.bind.annotation.ExceptionHandler;
+//import org.springframework.web.bind.annotation.RestControllerAdvice;
+//
+//import java.time.LocalDateTime;
+//import java.util.HashMap;
+//import java.util.Map;
+//
+//@RestControllerAdvice
+//public class GlobalExceptionHandler {
+//
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getAllErrors().forEach(error -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//        return buildResponse(HttpStatus.BAD_REQUEST, "Validation Error", errors);
+//    }
+//
+//    @ExceptionHandler(IllegalArgumentException.class)
+//    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException ex) {
+//        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+//    }
+//
+//    @ExceptionHandler(BadCredentialsException.class)
+//    public ResponseEntity<Map<String, Object>> handleBadCredentialsException(BadCredentialsException ex) {
+//        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid email or password", null);
+//    }
+//
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public ResponseEntity<Map<String, Object>> handleAccessDeniedException(AccessDeniedException ex) {
+//        return buildResponse(HttpStatus.FORBIDDEN, "Access Denied", null);
+//    }
+//
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {
+//        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
+//    }
+//
+//    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message, Object details) {
+//        Map<String, Object> body = new HashMap<>();
+//        body.put("timestamp", LocalDateTime.now());
+//        body.put("status", status.value());
+//        body.put("message", message);
+//        if (details != null) {
+//            body.put("details", details);
+//        }
+//        return new ResponseEntity<>(body, status);
+//    }
+//}
+
+
 --- FILE: src/main/java/nocountry/crm/shared/config/SchedulerConfig.java ---
 package nocountry.crm.shared.config;
 
@@ -1177,12 +1833,97 @@ public class SchedulerConfig {
 
 
 
+--- FILE: src/main/java/nocountry/crm/shared/config/SecurityConfig.java ---
+package nocountry.crm.shared.config;
+
+import nocountry.crm.feature.auth.repository.UserRepository;
+import nocountry.crm.feature.auth.security.JwtAuthenticationFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserRepository userRepository;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserRepository userRepository) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userRepository = userRepository;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configure(http))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // Para Swagger
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        // 1. Pasamos el userDetailsService directamente al constructor
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
+
+        // 2. El password encoder se sigue seteando de la misma manera
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+
 --- FILE: src/main/java/nocountry/crm/shared/config/SwaggerConfig.java ---
 package nocountry.crm.shared.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -1198,7 +1939,14 @@ public class SwaggerConfig {
                         .description("API sistema CRM")
                         .license(new License()
                                 .name("Apache 2.0")
-                                .url("https://www.apache.org/licenses/LICENSE-2.0")));
+                                .url("https://www.apache.org/licenses/LICENSE-2.0")))
+                .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
+                .components(new Components()
+                        .addSecuritySchemes("Bearer Authentication", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("Ingrese el token JWT para autenticar las solicitudes")));
     }
 }
 
