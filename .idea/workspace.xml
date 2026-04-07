@@ -5,6 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a25024d8-c693-4d4b-8970-176a50a4c7b9" name="Changes" comment="feat: Consultas para dashboard de estadísticas.">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/feature/metrics/CsvExportService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/feature/metrics/ExportFileResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/CrmApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/CrmApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/feature/lead/LeadRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/feature/lead/LeadRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/feature/metrics/MetricsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/nocountry/crm/feature/metrics/MetricsController.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -16,11 +24,14 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CompilerWorkspaceConfiguration">
+    <option name="MAKE_PROJECT_ON_SAVE" value="true" />
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="Record" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -44,6 +55,8 @@
     &quot;accountId&quot;: &quot;ac8ef44e-780d-4622-bafc-9b31599c2114&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -59,6 +72,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.CrmApplication.executor": "Run",
     "Application.CRM.executor": "Run",
     "Application.CrmApplication.executor": "Debug",
     "Application.Unnamed.executor": "Run",
@@ -67,6 +81,10 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feature-backend-metrics",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "settings.editor.selected.configurable": "project.propDebugger"
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Spring Boot.CrmApplication.executor": "Run",
     "git-widget-placeholder": "feature-backend-auth",
@@ -127,6 +145,17 @@
     </task>
     <option name="localTasksCounter" value="3" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat: se crea endpoint &quot;stats&quot; para métricas globales" />
