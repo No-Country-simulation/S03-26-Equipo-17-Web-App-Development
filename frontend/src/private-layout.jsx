@@ -3,9 +3,9 @@ import { LateralMenu } from "./components/CRM-Singin/lateralMenu";
 
 const PrivateLayout = () => {
     return (
-        <div className="flex min-h-screen">
+        <div classNameName="flex min-h-screen">
             <LateralMenu />
-            <main className="flex-1 bg-slate-50">
+            <main classNameName="flex-1 bg-slate-50">
                 <Outlet /> {/* Aquí caen Dashboard, Chats, etc. */}
             </main>
         </div>
