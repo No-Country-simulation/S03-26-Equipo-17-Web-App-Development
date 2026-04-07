@@ -40,6 +40,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configure(http))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                    .requestMatchers("/api/v1/whatsapp/webhook").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // Para Swagger
                 .anyRequest().authenticated()
             )
