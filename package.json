@@ -1,0 +1,10 @@
+{
+  "name": "s03-26-equipo-17-web-app",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && pnpm dev",
+    "build": "cd frontend && pnpm build",
+    "preview": "cd frontend && pnpm preview",
+    "lint": "cd frontend && pnpm lint"
+  }
+}
