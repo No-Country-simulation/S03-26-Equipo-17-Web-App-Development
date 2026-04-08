@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children }) => {
 
     if (!token) {
         // Si no está logueado, lo mandamos al login
-        return <Navigate to="./../features/auth/signin/SigninSection.jsx" replace />;
+        return <Navigate to="/signin" replace />;
     }
 
     // Si está logueado, mostramos la pantalla que pidió
