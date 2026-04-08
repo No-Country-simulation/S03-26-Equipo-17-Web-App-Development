@@ -195,7 +195,7 @@ export const About = () => {
               <article className="flex flex-col items-center text-center group">
                 <div className="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                   <img
-                    src="./../../../../public/Equipo/Foto de Mateo Martinez.png"
+                    src="./../../../../public/Equipo/Foto de Mateo Martinez.jpeg"
                     alt="Foto de Mateo Martínez"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
