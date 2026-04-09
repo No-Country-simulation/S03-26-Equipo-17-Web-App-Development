@@ -19,7 +19,7 @@ public class CorsConfig {
         
         config.setAllowCredentials(true);
         //Cambiar esto por la URL del frontend (ej. http://localhost:5173)
-        config.setAllowedOriginPatterns(List.of("*")); 
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         
