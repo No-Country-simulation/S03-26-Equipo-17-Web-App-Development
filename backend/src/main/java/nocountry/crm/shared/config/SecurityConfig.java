@@ -52,15 +52,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    }
-
-    @Bean
     public AuthenticationProvider authenticationProvider() {
+        // Create UserDetailsService inline to avoid Spring Security auto-configuration warning
+        UserDetailsService userDetailsService = username -> userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         // 1. Pasamos el userDetailsService directamente al constructor
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
 
         // 2. El password encoder se sigue seteando de la misma manera
         authProvider.setPasswordEncoder(passwordEncoder());
