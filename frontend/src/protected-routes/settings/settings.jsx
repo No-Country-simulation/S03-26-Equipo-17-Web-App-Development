@@ -51,40 +51,65 @@ export const Settings = () => {
                         {/* Formulario de Cambios */}
                         <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label
+                                    htmlFor="firstName"
+                                    className="text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                                >
                                     Nombre
                                 </label>
                                 <input
                                     type="text"
                                     defaultValue="Juan"
+                                    id="firstName"
+                                    name="firstName"
+                                    autoComplete="off"
                                     className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label
+                                    htmlFor="lastName"
+                                    className="text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                                >
                                     Apellido
                                 </label>
                                 <input
                                     type="text"
                                     defaultValue="Perez"
+                                    id="lastName"
+                                    name="lastName"
+                                    autoComplete="off"
                                     className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                                 />
                             </div>
                             <div className="md:col-span-2 space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <label
+                                    htmlFor="email"
+                                    className="text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                                >
                                     Correo Electrónico
                                 </label>
                                 <input
                                     type="email"
                                     defaultValue="ejemplo@nexus-hq.com"
+                                    id="email"
+                                    name="email"
+                                    autoComplete="off"
                                     className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                                 />
                             </div>
                             <div className="md:col-span-2 space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none flex items-center gap-1">
+                                <label
+                                    htmlFor="timeZone"
+                                    className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none flex items-center gap-1"
+                                >
                                     Zona Horaria <Globe size={10} />
                                 </label>
-                                <select className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none appearance-none font-medium text-slate-600">
+                                <select
+                                    id="timeZone"
+                                    name="timeZone"
+                                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none appearance-none font-medium text-slate-600"
+                                >
                                     <option>
                                         Astros Standard Time (AST) - (Latino America)
                                     </option>
