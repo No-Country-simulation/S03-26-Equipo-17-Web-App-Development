@@ -12,6 +12,7 @@ export const Signin = () => {
   const [setLoading] = useState(false);
   const [setServerError] = useState("");
   const navigate = useNavigate();
+  
 
   const [values, setValues] = useState({
     email: "",
@@ -102,11 +103,10 @@ export const Signin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    //setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://no-country-equipo-17-crm.hf.space/swagger-ui/index.html#/Autenticaci%C3%B3n/login",
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -138,7 +138,7 @@ export const Signin = () => {
     } catch (err) {
       setServerError(err.message);
     } finally {
-      setLoading(false);
+      //setLoading(false);
     }
   };
 

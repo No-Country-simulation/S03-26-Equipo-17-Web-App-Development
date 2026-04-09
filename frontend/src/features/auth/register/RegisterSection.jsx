@@ -11,8 +11,8 @@ export const Register = () => {
         password: "",
     });
 
-    const [setLoading] = useState(false);
-    const [setServerError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [serverError, setServerError] = useState("");
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,26 +38,32 @@ export const Register = () => {
         isPasswordValid
     );
 
-    const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const response = await fetch(
-                "https://no-country-equipo-17-crm.hf.space/swagger-ui/index.html#/Autenticaci%C3%B3n/register",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(formData), // Ahora envía firstName, lastName, email y password
-                },
-            );
+            // Filtramos solo los campos que pide tu DTO de Spring Boot
+            const payload = {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                password: formData.password
+            };
+
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
 
             const data = await response.json();
             if (!response.ok)
                 throw new Error(data.message || "Error en el registro");
 
             console.log("Usuario registrado con éxito:", data);
-            // Aquí podrías guardar el token si el registro loguea automáticamente
+            alert("¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
+            
         } catch (err) {
             setServerError(err.message);
         } finally {
@@ -97,13 +103,13 @@ export const Register = () => {
                             onChange={handleChange}
                             placeholder="Doe"
                         />
-                        <InputField
+                        {/* <InputField
                             label="Nombre de Usuario"
                             name="username"
                             value={formData.username}
                             onChange={handleChange}
                             placeholder="jdoe88"
-                        />
+                        /> */}
 
                         {/* Email con error visual (image_9.png) */}
                         <InputField
