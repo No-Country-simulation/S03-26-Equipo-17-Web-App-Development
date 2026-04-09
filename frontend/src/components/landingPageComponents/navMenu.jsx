@@ -10,7 +10,7 @@ export const NavMenu = () => {
             <Link to="/" className="hover:text-[#3882F6] transition">
               <img
                 className="h-10 md:h-12 w-auto object-contain"
-                src="./../../../public/Nexus CRM logo.png"
+                src="/Nexus CRM logo.png"
                 alt=""
               />
             </Link>

@@ -39,7 +39,7 @@ export const About = () => {
             {/* Logo de Nexus CRM */}
             <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 flex items-center justify-center h-64 md:h-auto">
               <img
-                src="./../../../../public/Nexus CRM logo.png"
+                src="/Nexus CRM logo.png"
                 alt="Logotipo oficial de Nexus CRM, mostrando la marca y el símbolo de conexión"
                 className="max-w-xs md:max-w-sm h-auto object-contain"
               />
@@ -172,7 +172,7 @@ export const About = () => {
               <article className="flex flex-col items-center text-center group">
                 <div className="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                   <img
-                    src="./../../../../public/Equipo/Foto de Luis Feliz.JPG"
+                    src="/Equipo/Foto de Luis Feliz.JPG"
                     alt="Foto de Luis Feliz"
                     className="w-full h-full object-cover group-hover:scale-105 hover:no-underline transition-transform duration-300"
                   />
@@ -195,7 +195,7 @@ export const About = () => {
               <article className="flex flex-col items-center text-center group">
                 <div className="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                   <img
-                    src="./../../../../public/Equipo/Foto de Mateo Martinez.jpeg"
+                    src="/Equipo/Foto de Mateo Martinez.jpeg"
                     alt="Foto de Mateo Martínez"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -218,7 +218,7 @@ export const About = () => {
               <article className="flex flex-col items-center text-center group">
                 <div className="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                   <img
-                    src="./../../../../public/Equipo/Foto de Isabel Prudencio.jpeg"
+                    src="/Equipo/Foto de Isabel Prudencio.jpeg"
                     alt="Foto de Isabel Prudencio"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -241,7 +241,7 @@ export const About = () => {
               <article className="flex flex-col items-center text-center group">
                 <div className="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                   <img
-                    src="./../../../../public/Equipo/Foto de Mario Perez.jpeg"
+                    src="/Equipo/Foto de Mario Perez.jpeg"
                     alt="Foto de Mario Perez"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -264,7 +264,7 @@ export const About = () => {
               <article className="flex flex-col items-center text-center group">
                 <div className="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                   <img
-                    src="./../../../../public/Equipo/Foto de Anthony Parra.jpeg"
+                    src="/Equipo/Foto de Anthony Parra.jpeg"
                     alt="Foto de Anthony Parra"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -287,7 +287,7 @@ export const About = () => {
               <article className="flex flex-col items-center text-center group">
                 <div className="w-full aspect-square bg-slate-100 rounded-3xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow duration-300">
                   <img
-                    src="./../../../../public/Equipo/Foto de Michael Ziliani.png"
+                    src="/Equipo/Foto de Michael Ziliani.png"
                     alt="Foto de Michael Ziliani"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />

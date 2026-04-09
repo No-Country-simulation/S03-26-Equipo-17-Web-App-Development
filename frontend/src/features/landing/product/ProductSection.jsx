@@ -42,7 +42,9 @@ export const Product = () => {
 
           {/* Floating Card */}
           <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg w-56">
-            <p className="text-sm font-semibold mb-1">Diseñado para dar claridad</p>
+            <p className="text-sm font-semibold mb-1">
+              Diseñado para dar claridad
+            </p>
             <p className="text-xs text-gray-500 mb-2">
               Una interfaz limpia con navegación intuitiva.
             </p>
@@ -97,7 +99,8 @@ export const Product = () => {
             Domina tus datos sin fricciones.
           </h2>
           <p className="text-gray-600 mb-6">
-            Obtén información en tiempo real y optimiza tus flujos de trabajo con herramientas diseñadas para la claridad y la eficiencia.
+            Obtén información en tiempo real y optimiza tus flujos de trabajo
+            con herramientas diseñadas para la claridad y la eficiencia.
           </p>
 
           <ul className="space-y-3">
@@ -133,9 +136,14 @@ export const Product = () => {
               Comienza hoy gratis
             </button>
           </Link>
-          <button className="border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition">
+          <a
+            href="https://www.youtube.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition"
+          >
             Mira una demo
-          </button>
+          </a>
         </div>
       </div>
     </section>

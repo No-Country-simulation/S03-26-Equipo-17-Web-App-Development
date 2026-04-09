@@ -45,9 +45,14 @@ export const LandingPage = () => {
                                 </button>
                             </Link>
 
-                            <button className="w-full sm:w-auto px-7 py-3.5 bg-slate-200 text-slate-900 font-semibold rounded-xl hover:bg-slate-300 transition-colors duration-200">
+                            <a
+                                href="https://www.youtube.com/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full sm:w-auto px-7 py-3.5 bg-slate-200 text-slate-900 font-semibold rounded-xl hover:bg-slate-300 transition-colors duration-200"
+                            >
                                 Video Demo
-                            </button>
+                            </a>
                         </div>
                     </div>
 
@@ -55,7 +60,7 @@ export const LandingPage = () => {
                         <div className="absolute inset-0 bg-white blur-3xl rounded-full -z-10 opacity-70 transform translate-x-10 translate-y-10"></div>
 
                         <img
-                            src="./../../../public/Imagen-modo-oscuro.png"
+                            src="/Imagen-modo-oscuro.png"
                             alt="Interfaz oscura de Nexus CRM"
                             className="w-full h-auto max-w-2xl rounded-2xl shadow-2xl shadow-slate-300/50 object-cover"
                         />
@@ -177,10 +182,11 @@ export const LandingPage = () => {
                                     Crear cuenta
                                 </button>
                             </Link>
-
-                            <button className="bg-[#4D5155] hover:bg-[#404347] text-white px-8 py-3.5 rounded-xl text-lg font-semibold transition-colors duration-200">
-                                Hablar con ventas
-                            </button>
+                            <Link to="/signin">
+                                <button className="bg-[#4D5155] hover:bg-[#404347] text-white px-8 py-3.5 rounded-xl text-lg font-semibold transition-colors duration-200">
+                                    Hablar con ventas
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 </div>
