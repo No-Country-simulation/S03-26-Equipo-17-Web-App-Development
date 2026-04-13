@@ -136,9 +136,9 @@ export const Signin = () => {
 
       window.location.href = "/dashboard"; // O usa navigate de react-router-dom
     } catch (err) {
-      //setServerError(err.message);
+      setServerError(err.message);
     } finally {
-      //setLoading(false);
+      setLoading(false);
     }
   };
 

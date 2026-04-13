@@ -33,13 +33,8 @@ export const Dashboard = () => {
                         {/* Botón con Toggle Manual */}
                         <button
                             onClick={() => setShowFiltro(!showFiltro)}
-                            className="
-      flex items-center justify-between 
-      w-52 h-10 px-4 
-      bg-white border border-slate-200 rounded-lg 
-      text-sm font-medium text-slate-600 
-      hover:border-slate-300 transition-all
-    "
+                            className="flex items-center justify-between w-52 h-10 px-4 bg-white border border-slate-200 rounded-lg 
+                            text-sm font-medium text-slate-600 hover:border-slate-300 transition-all"
                         >
                             <div className="flex items-center gap-2">
                                 <Calendar size={16} className="text-slate-400" />
@@ -73,10 +68,9 @@ export const Dashboard = () => {
                                                 setFiltroTiempo(opcion);
                                                 setShowFiltro(false); // Se cierra al elegir
                                             }}
-                                            className={`
-              w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors
-              ${filtroTiempo === opcion ? "bg-blue-50 text-blue-700 font-semibold" : "text-slate-600 hover:bg-slate-50"}
-            `}
+                                            className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors
+                                                ${filtroTiempo === opcion ? "bg-blue-50 text-blue-700 font-semibold" : "text-slate-600 hover:bg-slate-50"}
+                                                `}
                                         >
                                             {opcion}
                                             {filtroTiempo === opcion && (

@@ -38,7 +38,7 @@ export const Register = () => {
         isPasswordValid
     );
 
-const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
@@ -63,7 +63,7 @@ const handleSubmit = async (e) => {
 
             console.log("Usuario registrado con éxito:", data);
             alert("¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
-            
+
         } catch (err) {
             setServerError(err.message);
         } finally {
@@ -157,16 +157,22 @@ const handleSubmit = async (e) => {
                             </ul>
                         )}
 
+                        {serverError && (
+                            <p className="text-red-500 text-xs mt-2 text-center">
+                                {serverError}
+                            </p>
+                        )}
+
                         <div className="pt-4">
                             <button
                                 type="submit"
-                                disabled={isButtonDisabled}
+                                disabled={loading}
                                 className={`w-full px-8 py-4 rounded-xl text-white shadow-md transition-all active:scale-[0.98] ${isButtonDisabled
                                         ? "bg-slate-300 cursor-not-allowed shadow-none"
                                         : "bg-[#0055D4] hover:bg-blue-800"
                                     }`}
                             >
-                                Create Account
+                                Crear Cuenta
                             </button>
                         </div>
                     </form>
