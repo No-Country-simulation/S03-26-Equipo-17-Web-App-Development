@@ -2,6 +2,8 @@ import { useState } from "react";
 import { validateEmail } from "../../../utils/validations/validationEmail";
 import { validatePassword } from "../../../utils/validations/validationPassword";
 import { Link } from "react-router-dom";
+import Alert from "@mui/material/Alert";
+import Stack from "@mui/material/Stack";
 
 export const Register = () => {
     const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ export const Register = () => {
 
     const [loading, setLoading] = useState(false);
     const [serverError, setServerError] = useState("");
+    const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -65,8 +68,10 @@ export const Register = () => {
             alert("¡Cuenta creada con éxito! Ya puedes iniciar sesión.");
 
         } catch (err) {
+            setRegistrationSuccess(true);
             setServerError(err.message);
         } finally {
+            setRegistrationSuccess(false);
             setLoading(false);
         }
     };
@@ -157,12 +162,6 @@ export const Register = () => {
                             </ul>
                         )}
 
-                        {serverError && (
-                            <p className="text-red-500 text-xs mt-2 text-center">
-                                {serverError}
-                            </p>
-                        )}
-
                         <div className="pt-4">
                             <button
                                 type="submit"
@@ -174,6 +173,28 @@ export const Register = () => {
                             >
                                 Crear Cuenta
                             </button>
+                            <Stack sx={{ width: "100%", mt: 2 }} spacing={2}>
+                                {serverError && (
+                                    <Alert
+                                        icon={false}
+                                        sx={{ bgcolor: "#d32f2f", color: "white" }}
+                                        onClose={() => setServerError(null)}
+                                    >
+                                        {serverError}
+                                    </Alert>
+                                )}
+
+                                {/* Si manejas un estado de éxito tras el registro */}
+                                {registrationSuccess && (
+                                    <Alert
+                                        icon={false}
+                                        sx={{ bgcolor: "#2e7d32", color: "white" }}
+                                        onClose={() => setRegistrationSuccess(false)}
+                                    >
+                                        ¡Cuenta creada con éxito! Ya puedes iniciar sesión.
+                                    </Alert>
+                                )}
+                            </Stack>
                         </div>
                     </form>
 

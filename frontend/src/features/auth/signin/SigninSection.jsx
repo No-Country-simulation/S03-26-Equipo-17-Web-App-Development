@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { validateEmail } from "../../../utils/validations/validationEmail";
 import { validatePassword } from "../../../utils/validations/validationPassword";
 import { useNavigate } from "react-router-dom";
+import Alert from "@mui/material/Alert";
+import Stack from "@mui/material/Stack";
 
 export const Signin = () => {
   const [showPassword] = useState(false);
@@ -12,7 +14,7 @@ export const Signin = () => {
   const [setLoading] = useState(false);
   const [setServerError] = useState("");
   const navigate = useNavigate();
-  
+  const [loginError, setLoginError] = useState(null);
 
   const [values, setValues] = useState({
     email: "",
@@ -118,7 +120,7 @@ export const Signin = () => {
       );
 
       const data = await response.json();
-      
+
       if (response.ok) {
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken); // También te lo devuelve
@@ -136,6 +138,7 @@ export const Signin = () => {
 
       window.location.href = "/dashboard"; // O usa navigate de react-router-dom
     } catch (err) {
+      setLoginError("Credenciales incorrectas o Correo no registrado");
       setServerError(err.message);
     } finally {
       setLoading(false);
@@ -255,14 +258,22 @@ export const Signin = () => {
             <button
               disabled={!isValid}
               className={`w-full py-2 rounded-lg font-medium transition
-              ${
-                isValid
+              ${isValid
                   ? "bg-blue-600 text-white hover:bg-blue-700"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+                }`}
             >
               Iniciar sesión
             </button>
+            {loginError && (
+              <Alert
+                icon={false}
+                sx={{ bgcolor: "#d32f2f", color: "white" }}
+                onClose={() => setLoginError(null)}
+              >
+                {loginError}
+              </Alert>
+            )}
           </form>
         </div>
 
@@ -387,11 +398,10 @@ export const Signin = () => {
                   <button
                     disabled={!isNewPasswordValid}
                     className={`w-full mt-4 py-2 rounded-lg
-                    ${
-                      isNewPasswordValid
+                    ${isNewPasswordValid
                         ? "bg-blue-600 text-white"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     Hecho
                   </button>
