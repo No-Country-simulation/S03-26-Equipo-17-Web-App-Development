@@ -8,6 +8,7 @@ import nocountry.crm.feature.interaction.InteractionType;
 import nocountry.crm.feature.whatsapp.TwilioWhatsAppService;
 import nocountry.crm.shared.exception.BusinessRuleException;
 import nocountry.crm.shared.exception.ResourceNotFoundException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +29,9 @@ public class LeadService {
     private final InteractionService interactionService;
     private final EmailService emailService;
     private final TwilioWhatsAppService twilioWhatsAppService;
+
+    // Inyectamos el template de WebSockets
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public LeadResponse crearLead(LeadRequest request) {
@@ -98,6 +102,9 @@ public class LeadService {
                 InteractionType.CAMBIO_ESTADO,
                 estadoAnterior.name() + " → " + nuevoEstado.name()
         );
+
+        // Avisar al frontend que hubo un cambio de estado para que pinte la píldora central
+        messagingTemplate.convertAndSend("/topic/lead/" + id, "UPDATE_HISTORY");
         return leadMapper.toResponse(actualizado);
     }
 
@@ -157,7 +164,8 @@ public class LeadService {
                 : "Lead marcado como atendido (se limpió la alerta de inactividad)";
 
         interactionService.register(id, InteractionType.CAMBIO_ESTADO, mensajeHistorial);
-
+        // Avisar al frontend para que quite el badge de "inactivo" al instante
+        messagingTemplate.convertAndSend("/topic/lead/" + id, "UPDATE_HISTORY");
         return  leadMapper.toResponse(guardado);
     }
 
@@ -185,7 +193,15 @@ public class LeadService {
 
         leadRepository.save(lead);
 
+        // Registro de la interacción
+        // NOTA: Si este método register() devuelve el DTO de la interacción guardada,
+        // sería ideal guardarlo en una variable (ej: var interaction = interactionService.register(...))
         interactionService.register(lead.getId(), InteractionType.WHATSAPP_INCOMING, mensaje);
+
+        // Disparamos el WebSocket al canal del Lead específico
+        // Aquí enviamos un simple string "UPDATE_HISTORY", pero lo ideal es enviar el
+        // DTO o JSON de la interacción que se acaba de guardar para que el frontend lo pinte de una vez.
+        messagingTemplate.convertAndSend("/topic/lead/" + lead.getId(), "UPDATE_HISTORY");
 
         return leadMapper.toResponse(lead);
     }
@@ -213,6 +229,8 @@ public class LeadService {
         // 3. Actualizar actividad
         lead.setLastActivity(LocalDateTime.now());
         leadRepository.save(lead);
+        //Disparamos el WebSocket para que el chat del asesor se actualice
+        messagingTemplate.convertAndSend("/topic/lead/" + lead.getId(), "UPDATE_HISTORY");
     }
 
     private void enviarEmailBienvenida(Lead lead) {
