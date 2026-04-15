@@ -20,7 +20,45 @@ export const Chats = () => {
 
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
-            {/* 1. Columna Izquierda: Ventana de Conversación */}
+            {/* 1. Columna Izquierda: Bandeja de Entrada */}
+            <aside className="w-80 border-r border-slate-200 bg-white flex flex-col">
+                <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <h2 className="text-xl font-bold">Bandeja de entrada</h2>
+                    <span className="bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded-full">
+                        24 NUEVOS
+                    </span>
+                </div>
+
+                <div className="overflow-y-auto flex-1">
+                    {/* Item de Chat (Mock) */}
+                    <div className="p-4 flex gap-3 border-l-4 border-blue-600 bg-blue-50 cursor-pointer">
+                        <img
+                            src="/Equipo/Ana Castro.JPG"
+                            className="w-12 h-12 rounded-xl object-cover"
+                            alt="Ana"
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-baseline">
+                                <p className="font-semibold truncate">Ana Castro</p>
+                                <span className="text-xs text-slate-400">12:45 PM</span>
+                            </div>
+                            <p className="text-sm text-slate-500 truncate">
+                                ¿Podemos programar la demo para...
+                            </p>
+                            <div className="flex gap-2 mt-1">
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600">
+                                    CLIENTE
+                                </span>
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-600">
+                                    ALTO INTERÉS
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {/* ... otros contactos simulados ... */}
+                </div>
+            </aside>
+            {/* 2. Columna central: Ventana de Conversación */}
             <main className="flex-1 flex flex-col bg-white">
                 {/* Encabezado del Chat */}
                 <header className="p-4 border-b border-slate-200 flex justify-between items-center">
@@ -142,7 +180,7 @@ export const Chats = () => {
                 </footer>
             </main>
 
-            {/* 2. Columna Derecha: Perfil / Detalles del Contacto */}
+            {/* 3. Columna Derecha: Perfil / Detalles del Contacto */}
             <aside className="w-80 border-l border-slate-200 bg-white p-6 overflow-y-auto hidden lg:block">
                 <div className="flex flex-col items-center text-center">
                     <img
