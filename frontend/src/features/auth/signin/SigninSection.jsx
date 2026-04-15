@@ -102,7 +102,7 @@ export const Signin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    //setLoading(true);
 
     try {
       const response = await fetch(
@@ -118,7 +118,7 @@ export const Signin = () => {
       );
 
       const data = await response.json();
-      
+
       if (response.ok) {
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken); // También te lo devuelve
@@ -138,7 +138,7 @@ export const Signin = () => {
     } catch (err) {
       setServerError(err.message);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -255,11 +255,10 @@ export const Signin = () => {
             <button
               disabled={!isValid}
               className={`w-full py-2 rounded-lg font-medium transition
-              ${
-                isValid
+              ${isValid
                   ? "bg-blue-600 text-white hover:bg-blue-700"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+                }`}
             >
               Iniciar sesión
             </button>
@@ -387,11 +386,10 @@ export const Signin = () => {
                   <button
                     disabled={!isNewPasswordValid}
                     className={`w-full mt-4 py-2 rounded-lg
-                    ${
-                      isNewPasswordValid
+                    ${isNewPasswordValid
                         ? "bg-blue-600 text-white"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     Hecho
                   </button>
