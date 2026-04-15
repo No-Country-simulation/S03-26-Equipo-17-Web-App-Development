@@ -7,16 +7,112 @@ import {
     MoreVertical,
     AtSign,
 } from "lucide-react";
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
+// Importamos las librerías de WebSocket
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 export const Chats = () => {
     const fileInputRef = React.useRef(null);
+    const [showEmojis, setShowEmojis] = React.useState(false);
+
+   // Estados para manejar la lógica de datos
+    // Simulamos que el Lead seleccionado es el ID 1 (esto vendrá de la lista de la izquierda)
+    const [activeLeadId, setActiveLeadId] = useState(1); 
+    const [messages, setMessages] = useState([]);
+    const [inputValue, setInputValue] = useState("");
+
+    // Función para traer el historial vía HTTP (Endpoint actual)
+    const fetchHistory = async (leadId) => {
+        try {
+            // Reemplazar esto con tu URL base real
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/leads/${leadId}/history`);
+            const data = await response.json();
+            setMessages(data.content || data);
+            console.log(`📡 Fetch HTTP: Obteniendo historial actualizado del lead ${leadId}`);
+        } catch (error) {
+            console.error("Error al obtener el historial:", error);
+        }
+    };
+
+    // Efecto principal para conectar el WebSocket
+    useEffect(() => {
+        if (!activeLeadId) return;
+
+        // 1. Cargar el historial inicial al seleccionar el lead
+        fetchHistory(activeLeadId);
+
+        // 2. Conectar al WebSocket del backend
+        // Usamos la variable de entorno, y dejamos el localhost como respaldo de seguridad
+        const wsUrl = import.meta.env.VITE_WS_URL || "http://localhost:8080/ws";
+        const socket = new SockJS(wsUrl);
+        const stompClient = Stomp.over(socket);
+
+        // Ocultar logs de debug en consola
+        stompClient.debug = () => {}; 
+
+        stompClient.connect({}, (frame) => {
+            console.log(" Conectado al WebSocket:", frame);
+
+            // 3. Suscribirse al canal específico de este Lead
+            stompClient.subscribe(`/topic/lead/${activeLeadId}`, (message) => {
+                if (message.body === "UPDATE_HISTORY") {
+                    console.log("⚡ ¡Evento recibido por WebSocket! Recargando chat...");
+                    // Volvemos a disparar el fetch para que la pantalla se actualice sola
+                    fetchHistory(activeLeadId); 
+                }
+            });
+        }, (error) => {
+            console.error("🔴 Error en WebSocket:", error);
+        });
+
+        // 4. Limpieza: Desconectar cuando el usuario cambia de chat o sale de la pantalla
+        return () => {
+            if (stompClient) {
+                stompClient.disconnect();
+                console.log("⚪ Desconectado del WebSocket");
+            }
+        };
+    }, [activeLeadId]); // El efecto se re-ejecuta si cambias de chat
+
+   //Función real para enviar el mensaje al backend
+    const handleSendMessage = async () => {
+        if (!inputValue.trim()) return;
+        
+        try {
+            // Hacemos el POST al endpoint en WhatsAppWebhookController
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/whatsapp/send`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": `Bearer ${token}` // Descomentar esto si se usa JWT
+                },
+                body: JSON.stringify({
+                    leadId: activeLeadId,
+                    message: inputValue
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Fallo al enviar el mensaje");
+            }
+
+            console.log("✅ Mensaje enviado:", inputValue, "al lead:", activeLeadId);
+            
+            // Limpiamos el input después de enviar
+            setInputValue("");
+            setShowEmojis(false);
+            
+            
+        } catch (error) {
+            console.error("🔴 Error al enviar el mensaje:", error);
+            // Aquí se puede mostrar un toast o alerta de error al usuario
+        }
+    };
 
     const handleAttachmentClick = () => {
         fileInputRef.current.click();
     };
-
-    const [showEmojis, setShowEmojis] = React.useState(false);
 
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
