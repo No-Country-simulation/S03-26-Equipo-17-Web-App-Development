@@ -7,7 +7,7 @@ import {
     MoreVertical,
     AtSign,
 } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
 // Importamos las librerías de WebSocket
 import SockJS from "sockjs-client";
@@ -16,10 +16,10 @@ export const Chats = () => {
     const fileInputRef = React.useRef(null);
     const [showEmojis, setShowEmojis] = React.useState(false);
 
-   // Estados para manejar la lógica de datos
+    // Estados para manejar la lógica de datos
     // Simulamos que el Lead seleccionado es el ID 1 (esto vendrá de la lista de la izquierda)
-    const [activeLeadId, setActiveLeadId] = useState(1); 
-    const [messages, setMessages] = useState([]);
+    const [activeLeadId] = useState(1);
+    const [setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
 
     // Función para traer el historial vía HTTP (Endpoint actual)
@@ -49,7 +49,7 @@ export const Chats = () => {
         const stompClient = Stomp.over(socket);
 
         // Ocultar logs de debug en consola
-        stompClient.debug = () => {}; 
+        stompClient.debug = () => { };
 
         stompClient.connect({}, (frame) => {
             console.log(" Conectado al WebSocket:", frame);
@@ -59,7 +59,7 @@ export const Chats = () => {
                 if (message.body === "UPDATE_HISTORY") {
                     console.log("⚡ ¡Evento recibido por WebSocket! Recargando chat...");
                     // Volvemos a disparar el fetch para que la pantalla se actualice sola
-                    fetchHistory(activeLeadId); 
+                    fetchHistory(activeLeadId);
                 }
             });
         }, (error) => {
@@ -75,10 +75,10 @@ export const Chats = () => {
         };
     }, [activeLeadId]); // El efecto se re-ejecuta si cambias de chat
 
-   //Función real para enviar el mensaje al backend
+    //Función real para enviar el mensaje al backend
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return;
-        
+
         try {
             // Hacemos el POST al endpoint en WhatsAppWebhookController
             const response = await fetch(`${import.meta.env.VITE_API_URL}/whatsapp/send`, {
@@ -98,12 +98,12 @@ export const Chats = () => {
             }
 
             console.log("✅ Mensaje enviado:", inputValue, "al lead:", activeLeadId);
-            
+
             // Limpiamos el input después de enviar
             setInputValue("");
             setShowEmojis(false);
-            
-            
+
+
         } catch (error) {
             console.error("🔴 Error al enviar el mensaje:", error);
             // Aquí se puede mostrar un toast o alerta de error al usuario
@@ -269,7 +269,10 @@ export const Chats = () => {
                                 </div>
                             )}
                         </div>
-                        <button className="bg-blue-600 p-2 rounded-xl text-white hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200">
+                        <button
+                            onClick={handleSendMessage}
+                            className="bg-blue-600 p-2 rounded-xl text-white hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200"
+                        >
                             <Send size={18} />
                         </button>
                     </div>
