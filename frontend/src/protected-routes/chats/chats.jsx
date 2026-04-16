@@ -15,14 +15,24 @@ export const Chats = () => {
     const fileInputRef = React.useRef(null);
     const [showEmojis, setShowEmojis] = React.useState(false);
 
-    // CORRECCIÓN 1: Declaración correcta de estados
+    // Declaración correcta de estados
     const [activeLeadId, setActiveLeadId] = useState(1);
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
 
     const fetchHistory = async (leadId) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/leads/${leadId}/history`);
+            // 1. OBTENER EL TOKEN DEL LOCALSTORAGE
+            const token = localStorage.getItem("accessToken"); 
+            // 2. ENVIAR EL TOKEN EN LOS HEADERS
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/leads/${leadId}/history`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) throw new Error("Fallo al obtener historial (Error " + response.status + ")");
+            
             const data = await response.json();
             setMessages(data.content || data);
             console.log(`📡 Historial actualizado del lead ${leadId}`, data);
@@ -66,10 +76,15 @@ export const Chats = () => {
         if (!inputValue.trim()) return;
 
         try {
+            // 1. OBTENER EL TOKEN DEL LOCALSTORAGE
+            const token = localStorage.getItem("accessToken"); // <-- Verifica que este sea el nombre correcto
+
+            // 2. ENVIAR EL TOKEN EN LOS HEADERS
             const response = await fetch(`${import.meta.env.VITE_API_URL}/whatsapp/send`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     leadId: activeLeadId,
@@ -77,7 +92,7 @@ export const Chats = () => {
                 })
             });
 
-            if (!response.ok) throw new Error("Fallo al enviar el mensaje");
+            if (!response.ok) throw new Error("Fallo al enviar el mensaje (Error " + response.status + ")");
 
             setInputValue("");
             setShowEmojis(false);
@@ -92,7 +107,7 @@ export const Chats = () => {
 
     return (
         <div className="flex h-screen bg-slate-50 font-sans text-slate-900">
-            {/* Columna Izquierda (Se mantiene igual) */}
+            {/* Columna Izquierda */}
             <aside className="w-80 border-r border-slate-200 bg-white flex flex-col">
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center">
                     <h2 className="text-xl font-bold">Bandeja de entrada</h2>
@@ -122,47 +137,47 @@ export const Chats = () => {
                     </div>
                 </header>
 
-            {/* Mensajes dinámicos */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-opacity-5">
-                {messages.length === 0 ? (
-                    <div className="text-center text-slate-400 mt-10">No hay mensajes en el historial.</div>
-                ) : (
-                    messages.map((msg, index) => {
-                        // Evaluamos el tipo exacto según tu enum en Java
-                        const isIncoming = msg.type === "WHATSAPP_INCOMING";
+                {/* Mensajes dinámicos */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-opacity-5">
+                    {messages.length === 0 ? (
+                        <div className="text-center text-slate-400 mt-10">No hay mensajes en el historial.</div>
+                    ) : (
+                        messages.map((msg, index) => {
+                            // Evaluamos el tipo exacto según tu enum en Java
+                            const isIncoming = msg.type === "WHATSAPP_INCOMING";
 
-                        return (
-                            <div
-                                key={index}
-                                className={`flex gap-3 max-w-[80%] ${isIncoming ? "self-start" : "ml-auto flex-col items-end gap-1"}`}
-                            >
-                                {isIncoming && (
-                                    <img src="/Equipo/Ana Castro.JPG" className="w-8 h-8 rounded-full self-end" alt="Cliente" />
-                                )}
-
+                            return (
                                 <div
-                                    className={`p-4 text-sm leading-relaxed shadow-md ${
-                                        isIncoming
-                                            ? "bg-slate-100 rounded-2xl rounded-bl-none text-slate-900"
-                                            : "bg-blue-600 text-white rounded-2xl rounded-br-none"
-                                    }`}
+                                    key={index}
+                                    className={`flex gap-3 max-w-[80%] ${isIncoming ? "self-start" : "ml-auto flex-col items-end gap-1"}`}
                                 >
-                                    {/* Usamos exactamente el nombre del campo en tu clase Java */}
-                                    {msg.content}
-                                </div>
+                                    {isIncoming && (
+                                        <img src="/Equipo/Ana Castro.JPG" className="w-8 h-8 rounded-full self-end" alt="Cliente" />
+                                    )}
 
-                                {/* Agregamos la hora real del mensaje usando msg.createdAt */}
-                                <span className="text-[10px] text-slate-400 uppercase">
-                                    {msg.createdAt 
-                                        ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                                        : ''} 
-                                    {isIncoming ? " • Recibido" : " • Enviado"}
-                                </span>
-                            </div>
-                        );
-                    })
-                )}
-            </div>
+                                    <div
+                                        className={`p-4 text-sm leading-relaxed shadow-md ${
+                                            isIncoming
+                                                ? "bg-slate-100 rounded-2xl rounded-bl-none text-slate-900"
+                                                : "bg-blue-600 text-white rounded-2xl rounded-br-none"
+                                        }`}
+                                    >
+                                        {/* Usamos exactamente el nombre del campo en tu clase Java */}
+                                        {msg.content}
+                                    </div>
+
+                                    {/* Agregamos la hora real del mensaje usando msg.createdAt */}
+                                    <span className="text-[10px] text-slate-400 uppercase">
+                                        {msg.createdAt 
+                                            ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                                            : ''} 
+                                        {isIncoming ? " • Recibido" : " • Enviado"}
+                                    </span>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
 
                 {/* Input de Mensaje */}
                 <footer className="p-4 border-t border-slate-200">
@@ -172,7 +187,6 @@ export const Chats = () => {
                         </button>
                         <input type="file" ref={fileInputRef} className="hidden" />
                         
-                        {/* CORRECCIÓN 3: Conectar el input al estado inputValue */}
                         <input
                             type="text"
                             placeholder="Escribe un mensaje..."
@@ -188,8 +202,6 @@ export const Chats = () => {
                     </div>
                 </footer>
             </main>
-
-            {/* Columna Derecha (Oculta en código abreviado para no hacer el bloque gigante, mantén la tuya) */}
         </div>
     );
 };
