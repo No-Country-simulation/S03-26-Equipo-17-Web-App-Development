@@ -13,10 +13,10 @@ import { Stomp } from "@stomp/stompjs";
 
 export const Chats = () => {
     const fileInputRef = React.useRef(null);
-    const [showEmojis, setShowEmojis] = React.useState(false);
+    const [_showEmojis, setShowEmojis] = React.useState(false);
 
     // Declaración correcta de estados
-    const [activeLeadId, setActiveLeadId] = useState(1);
+    const [activeLeadId, _setActiveLeadId] = useState(1);
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState("");
 
@@ -52,7 +52,7 @@ export const Chats = () => {
 
         stompClient.debug = () => { };
 
-        stompClient.connect({}, (frame) => {
+        stompClient.connect({}, () => {
             console.log("🟢 Conectado al WebSocket");
 
             stompClient.subscribe(`/topic/lead/${activeLeadId}`, (message) => {

@@ -28,9 +28,9 @@ export const router = createBrowserRouter([
     // El CRM privado (Después de iniciar sesión)
     path: "/dashboard",
     element: (
-      <ProtectedRoute>
+      //<ProtectedRoute>
         <PrivateLayout />
-      </ProtectedRoute>
+      //</ProtectedRoute>
     ),
     children: [
       { index: true, element: <Dashboard /> },
