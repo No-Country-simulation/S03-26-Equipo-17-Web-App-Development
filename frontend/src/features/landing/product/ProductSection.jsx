@@ -137,7 +137,7 @@ export const Product = () => {
             </button>
           </Link>
           <a
-            href="https://www.youtube.com/"
+            href="https://www.youtube.com/watch?v=k_t8yHGCMB8&t=13s"
             target="_blank"
             rel="noopener noreferrer"
             className="border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition"

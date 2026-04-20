@@ -46,7 +46,7 @@ export const LandingPage = () => {
                             </Link>
 
                             <a
-                                href="https://www.youtube.com/"
+                                href="https://www.youtube.com/watch?v=k_t8yHGCMB8&t=13s"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-full sm:w-auto px-7 py-3.5 bg-slate-200 text-slate-900 font-semibold rounded-xl hover:bg-slate-300 transition-colors duration-200"
